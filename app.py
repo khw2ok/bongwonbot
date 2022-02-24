@@ -1,7 +1,9 @@
 from bs4 import BeautifulSoup
+from datetime import datetime
 from flask import Flask, request, jsonify
 
 import dotenv
+import json
 import os
 import re
 import requests
@@ -13,7 +15,7 @@ dotenv.load_dotenv()
 def home():
     return ("Hello Podcast!")
 
-@app.route("/test", methods=['POST'])
+@app.route("/test", methods=["POST"])
 def test():
     req_json = request.get_json()
     skill_test = req_json["action"]["detailParams"]["skill_test"]["value"]
@@ -31,7 +33,7 @@ def test():
         }
     }
 
-@app.route("/weather", methods=['POST'])
+@app.route("/weather", methods=["POST"])
 def weather():
     req_json = request.get_json()
     skill_weather = req_json["action"]["detailParams"]["skill_weather"]["value"]
@@ -153,7 +155,7 @@ def weather():
         }
     }
 
-@app.route("/virus", methods=['POST'])
+@app.route("/virus", methods=["POST"])
 def virus():
     req_json = request.get_json()
     skill_virus = req_json["action"]["detailParams"]["skill_virus"]["value"]
@@ -195,6 +197,80 @@ def virus():
             ]
         }
     }
+
+@app.route("/food", methods=["POST"])
+def food():
+    req_json = request.get_json()
+    skill_food = req_json["action"]["detailParams"]["skill_food"]["value"]
+
+    url = requests.get("https://schoolmenukr.ml/api/middle/B100001561")
+    
+    file = url.text
+    data = json.loads(file)
+    #print(re.sub("-?\d+|\'|\?|\'|\.|", "", str(data)))
+
+
+    answer1 = "1일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][0]["lunch"]))+"\n2일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][1]["lunch"]))+"\n3일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][2]["lunch"]))+"\n4일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][3]["lunch"]))+"\n5일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][4]["lunch"]))+"\n6일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][5]["lunch"]))+"\n7일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][6]["lunch"]))
+    answer2 = "8일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][7]["lunch"]))+"\n9일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][8]["lunch"]))+"\n10일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][9]["lunch"]))+"\n11일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][10]["lunch"]))+"\n12일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][11]["lunch"]))+"\n13일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][12]["lunch"]))+"\n14일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][13]["lunch"]))
+    answer3 = "15일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][14]["lunch"]))+"\n16일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][15]["lunch"]))+"\n17일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][16]["lunch"]))+"\n18일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][17]["lunch"]))+"\n19일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][18]["lunch"]))+"\n20일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][19]["lunch"]))+"\n21일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][20]["lunch"]))
+    answer4 = "22일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][21]["lunch"]))+"\n23일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][22]["lunch"]))+"\n24일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][23]["lunch"]))+"\n25일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][24]["lunch"]))+"\n26일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][25]["lunch"]))+"\n27일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][26]["lunch"]))+"\n28일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][27]["lunch"]))
+    while True:
+        try:
+            answer5 = "29일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][28]["lunch"]))+"\n30일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][29]["lunch"]))+"\n31일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][30]["lunch"]))
+        except IndexError:
+            try:
+                answer5 = "29일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][28]["lunch"]))+"\n30일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][29]["lunch"]))
+            except IndexError:
+                try:
+                    answer5 = "29일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][28]["lunch"]))
+                except IndexError:
+                    try:
+                        answer5 = "None"
+                    except:
+                        return {
+                            "version": "2.0",
+                            "template": {
+                                "outputs": [
+                                    {   
+                                        "simpleText": {
+                                            "text": f"{datetime.now().month}월 {datetime.now().day}일"
+                                        }
+                                    },
+                                    {   
+                                        "simpleText": {
+                                            "text": answer1
+                                        }
+                                    },
+                                    {   
+                                        "simpleText": {
+                                            "text": answer2
+                                        }
+                                    },
+                                    {   
+                                        "simpleText": {
+                                            "text": answer3
+                                        }
+                                    },
+                                    {   
+                                        "simpleText": {
+                                            "text": answer4
+                                        }
+                                    },
+                                    {   
+                                        "simpleText": {
+                                            "text": answer5
+                                        }
+                                    },
+                                ],
+                                "quickReplies": [
+                                    {
+                                        "blockId": "61f0cf897953c638686710f3",
+                                        "action": "message",
+                                        "label": "오류 제보하기"
+                                    }
+                                ]
+                            }
+                        }
 
 if __name__ == "__main__":
     app.run(debug=True)
