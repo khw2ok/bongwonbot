@@ -1,3 +1,4 @@
+from typing import Type
 from bs4 import BeautifulSoup
 from datetime import datetime
 from flask import Flask, request, jsonify
@@ -76,7 +77,7 @@ def weather():
             "outputs": [
                 {   
                     "simpleText": {
-                        "text": f"행운동 봉원중학교의 현재 날씨 {weather}.\n\n※현재 테스트 중인 기능이며 오류 발생 시 아래 바로가기를 통해 제보해주시길 바랍니다.\n(서버의 네트워크 상황에 따라 데이터가 공백일 수 있습니다.)\n\n사용한 날씨 및 대기질 정보 '네이버 날씨'"
+                        "text": f"행운동 봉원중학교의 현재 날씨 {weather}.\n\n※현재 테스트 중인 기능이며 오류 발생 시 아래 바로가기를 통해 제보해주시길 바랍니다.\n(서버의 네트워크 상황에 따라 데이터가 공백일: 수 있습니다.)\n\n사용한 날씨 및 대기질 정보 '네이버 날씨'"
                     }
                 },
                 {
@@ -184,7 +185,7 @@ def virus():
             "outputs": [
                 {   
                     "simpleText": {
-                        "text": f"[바이러스 현황]\n코로나 확진자: {str(format(int(r_infection), ','))}명 (+ {str(format(int(r_infection_day), ','))}명)\n코로나 사망자: {str(format(int(r_death), ','))}명 (+ {str(format(int(r_death_day), ','))}명)\n\n[백신 접종률]\n백신 접종 (1차): {vaccine1}\n백신 접종 (2차): {vaccine2}\n백신 접종 (3차): {vaccine3}\n\n※현재 테스트 중인 기능이며 오류 발생 시 아래 바로가기를 통해 제보해주시길 바랍니다.\n(서버의 네트워크 상황에 따라 데이터가 공백일 수 있습니다.)\n\n사용한 코로나 바이러스 정보 '정부 코로나바이러스감염증-19'"
+                        "text": f"[바이러스 현황]\n코로나 확진자: {str(format(int(r_infection), ','))}명 (+ {str(format(int(r_infection_day), ','))}명)\n코로나 사망자: {str(format(int(r_death), ','))}명 (+ {str(format(int(r_death_day), ','))}명)\n\n[백신 접종률]\n백신 접종 (1차): {vaccine1}\n백신 접종 (2차): {vaccine2}\n백신 접종 (3차): {vaccine3}\n\n※현재 테스트 중인 기능이며 오류 발생 시 아래 바로가기를 통해 제보해주시길 바랍니다.\n(서버의 네트워크 상황에 따라 데이터가 공백일: 수 있습니다.)\n\n사용한 코로나 바이러스 정보 '정부 코로나바이러스감염증-19'"
                     }
                 },
             ],
@@ -209,68 +210,71 @@ def food():
     data = json.loads(file)
     #print(re.sub("-?\d+|\'|\?|\'|\.|", "", str(data)))
 
-
-    answer1 = "1일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][0]["lunch"]))+"\n2일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][1]["lunch"]))+"\n3일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][2]["lunch"]))+"\n4일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][3]["lunch"]))+"\n5일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][4]["lunch"]))+"\n6일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][5]["lunch"]))+"\n7일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][6]["lunch"]))
-    answer2 = "8일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][7]["lunch"]))+"\n9일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][8]["lunch"]))+"\n10일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][9]["lunch"]))+"\n11일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][10]["lunch"]))+"\n12일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][11]["lunch"]))+"\n13일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][12]["lunch"]))+"\n14일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][13]["lunch"]))
-    answer3 = "15일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][14]["lunch"]))+"\n16일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][15]["lunch"]))+"\n17일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][16]["lunch"]))+"\n18일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][17]["lunch"]))+"\n19일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][18]["lunch"]))+"\n20일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][19]["lunch"]))+"\n21일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][20]["lunch"]))
-    answer4 = "22일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][21]["lunch"]))+"\n23일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][22]["lunch"]))+"\n24일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][23]["lunch"]))+"\n25일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][24]["lunch"]))+"\n26일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][25]["lunch"]))+"\n27일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][26]["lunch"]))+"\n28일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][27]["lunch"]))
-    while True:
+    answer1 = "1일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][0]["lunch"]))+"\n2일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][1]["lunch"]))+"\n3일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][2]["lunch"]))+"\n4일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][3]["lunch"]))+"\n5일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][4]["lunch"]))+"\n6일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][5]["lunch"]))+"\n7일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][6]["lunch"]))
+    answer2 = "8일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][7]["lunch"]))+"\n9일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][8]["lunch"]))+"\n10일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][9]["lunch"]))+"\n11일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][10]["lunch"]))+"\n12일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][11]["lunch"]))+"\n13일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][12]["lunch"]))+"\n14일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][13]["lunch"]))
+    answer3 = "15일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][14]["lunch"]))+"\n16일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][15]["lunch"]))+"\n17일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][16]["lunch"]))+"\n18일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][17]["lunch"]))+"\n19일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][18]["lunch"]))+"\n20일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][19]["lunch"]))+"\n21일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][20]["lunch"]))
+    answer4 = "22일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][21]["lunch"]))+"\n23일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][22]["lunch"]))+"\n24일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][23]["lunch"]))+"\n25일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][24]["lunch"]))+"\n26일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][25]["lunch"]))+"\n27일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][26]["lunch"]))+"\n28일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][27]["lunch"]))
+    try:
+        answer5 = "29일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][28]["lunch"]))+"\n30일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][29]["lunch"]))+"\n31일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][30]["lunch"]))
+    except TypeError:
         try:
-            answer5 = "29일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][28]["lunch"]))+"\n30일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][29]["lunch"]))+"\n31일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][30]["lunch"]))
-        except IndexError:
+            answer5 = "29일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][28]["lunch"]))+"\n30일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][29]["lunch"]))
+        except TypeError:
             try:
-                answer5 = "29일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][28]["lunch"]))+"\n30일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][29]["lunch"]))
-            except IndexError:
-                try:
-                    answer5 = "29일 "+re.sub("-?\d+|\'|\.|\'", "", str(data["menu"][28]["lunch"]))
-                except IndexError:
-                    try:
-                        answer5 = "None"
-                    except:
-                        return {
-                            "version": "2.0",
-                            "template": {
-                                "outputs": [
-                                    {   
-                                        "simpleText": {
-                                            "text": f"{datetime.now().month}월 {datetime.now().day}일"
-                                        }
-                                    },
-                                    {   
-                                        "simpleText": {
-                                            "text": answer1
-                                        }
-                                    },
-                                    {   
-                                        "simpleText": {
-                                            "text": answer2
-                                        }
-                                    },
-                                    {   
-                                        "simpleText": {
-                                            "text": answer3
-                                        }
-                                    },
-                                    {   
-                                        "simpleText": {
-                                            "text": answer4
-                                        }
-                                    },
-                                    {   
-                                        "simpleText": {
-                                            "text": answer5
-                                        }
-                                    },
-                                ],
-                                "quickReplies": [
-                                    {
-                                        "blockId": "61f0cf897953c638686710f3",
-                                        "action": "message",
-                                        "label": "오류 제보하기"
-                                    }
-                                ]
-                            }
-                        }
+                answer5 = "29일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][28]["lunch"]))
+            except TypeError:
+                answer5 = "None"
+
+
+    return {
+        "version": "2.0",
+        "template": {
+            "outputs": [
+                {   
+                    "simpleText": {
+                        "text": "※pb1에 추가된 기능, 현재 테스트 중인 기능이며, 오류 발생 시 아래 바로가기를 통해 제보해주시길 바랍니다.\n(급식이 없는 날은 데이터가 None 또는 공백일 수도 있습니다.)\n\n사용한 학교 급식 정보 '5d-jh/school-menu-api (NEIS 급식)'"
+                    }
+                },
+                {   
+                    "simpleText": {
+                        "text": f"{datetime.now().month}월 {datetime.now().day}일"
+                    }
+                },
+                {
+                    "simpleText": {
+                        "text": answer1
+                    }
+                },
+                {   
+                    "simpleText": {
+                        "text": answer2
+                    }
+                },
+                {   
+                    "simpleText": {
+                        "text": answer3
+                    }
+                },
+                {   
+                    "simpleText": {
+                        "text": answer4
+                    }
+                },
+                {   
+                    "simpleText": {
+                        "text": answer5
+                    }
+                },
+            ],
+            "quickReplies": [
+                {
+                    "blockId": "61f0cf897953c638686710f3",
+                    "action": "message",
+                    "label": "오류 제보하기"
+                }
+            ]
+        }
+    }
 
 if __name__ == "__main__":
     app.run(debug=True)
