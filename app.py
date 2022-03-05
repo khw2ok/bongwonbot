@@ -1,7 +1,7 @@
 from typing import Type
 from bs4 import BeautifulSoup
-from datetime import datetime
-from flask import Flask, request, jsonify
+from datetime import date, datetime
+from flask import Flask, jsonify
 
 import dotenv
 import json
@@ -14,13 +14,24 @@ dotenv.load_dotenv()
 
 @app.route("/")
 def home():
-    return ("Hello Podcast!")
+    return (
+        '''
+        <html>
+            <head>
+                <title>BongwonBot</title>
+                <meta http-equiv="refresh" content="5;url=https://bongwonbot.github.io"/>
+            </head>
+            <body>
+                <div>
+                    Hello Podcast!
+                </div>
+            </body>
+        </html>
+        '''
+    )
 
 @app.route("/test", methods=["POST"])
 def test():
-    req_json = request.get_json()
-    skill_test = req_json["action"]["detailParams"]["skill_test"]["value"]
-
     return {
         "version": "2.0",
         "template": {
@@ -35,10 +46,7 @@ def test():
     }
 
 @app.route("/weather", methods=["POST"])
-def weather():
-    req_json = request.get_json()
-    skill_weather = req_json["action"]["detailParams"]["skill_weather"]["value"]
-    
+def weather():    
     url1 = "https://weather.naver.com/today/09620575"
     url2 = "https://weather.naver.com/air/09620575"
     
@@ -158,9 +166,6 @@ def weather():
 
 @app.route("/virus", methods=["POST"])
 def virus():
-    req_json = request.get_json()
-    skill_virus = req_json["action"]["detailParams"]["skill_virus"]["value"]
-    
     url = "http://ncov.mohw.go.kr/"
     
     res = requests.get(url) #covid_virus
@@ -201,68 +206,63 @@ def virus():
 
 @app.route("/food", methods=["POST"])
 def food():
-    req_json = request.get_json()
-    skill_food = req_json["action"]["detailParams"]["skill_food"]["value"]
-
     url = requests.get("https://schoolmenukr.ml/api/middle/B100001561")
     
     file = url.text
     data = json.loads(file)
     #print(re.sub("-?\d+|\'|\?|\'|\.|", "", str(data)))
 
-    answer1 = "1일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][0]["lunch"]))+"\n2일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][1]["lunch"]))+"\n3일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][2]["lunch"]))+"\n4일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][3]["lunch"]))+"\n5일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][4]["lunch"]))+"\n6일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][5]["lunch"]))+"\n7일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][6]["lunch"]))
-    answer2 = "8일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][7]["lunch"]))+"\n9일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][8]["lunch"]))+"\n10일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][9]["lunch"]))+"\n11일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][10]["lunch"]))+"\n12일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][11]["lunch"]))+"\n13일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][12]["lunch"]))+"\n14일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][13]["lunch"]))
-    answer3 = "15일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][14]["lunch"]))+"\n16일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][15]["lunch"]))+"\n17일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][16]["lunch"]))+"\n18일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][17]["lunch"]))+"\n19일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][18]["lunch"]))+"\n20일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][19]["lunch"]))+"\n21일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][20]["lunch"]))
-    answer4 = "22일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][21]["lunch"]))+"\n23일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][22]["lunch"]))+"\n24일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][23]["lunch"]))+"\n25일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][24]["lunch"]))+"\n26일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][25]["lunch"]))+"\n27일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][26]["lunch"]))+"\n28일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][27]["lunch"]))
+    days = ['월', '화', '수', '목', '금', '토', '일']
+    #days[datetime(int(datetime.now().year), int(datetime.now().month), 1).weekday()]
+
+    answer1 = "1일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 1).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][0]["lunch"]))+"\n2일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 2).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][1]["lunch"]))+"\n3일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 3).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][2]["lunch"]))+"\n4일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 4).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][3]["lunch"]))+"\n5일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 5).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][4]["lunch"]))+"\n6일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 6).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][5]["lunch"]))+"\n7일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 7).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][6]["lunch"]))
+    answer2 = "8일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 8).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][7]["lunch"]))+"\n9일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 9).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][8]["lunch"]))+"\n10일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 10).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][9]["lunch"]))+"\n11일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 11).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][10]["lunch"]))+"\n12일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 12).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][11]["lunch"]))+"\n13일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 13).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][12]["lunch"]))+"\n14일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 14).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][13]["lunch"]))
+    answer3 = "15일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 15).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][14]["lunch"]))+"\n16일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 16).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][15]["lunch"]))+"\n17일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 17).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][16]["lunch"]))+"\n18일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 18).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][17]["lunch"]))+"\n19일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 19).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][18]["lunch"]))+"\n20일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 20).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][19]["lunch"]))+"\n21일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 21).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][20]["lunch"]))
+    answer4 = "22일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 22).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][21]["lunch"]))+"\n23일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 23).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][22]["lunch"]))+"\n24일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 24).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][23]["lunch"]))+"\n25일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 25).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][24]["lunch"]))+"\n26일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 26).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][25]["lunch"]))+"\n27일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 27).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][26]["lunch"]))+"\n28일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 28).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][27]["lunch"]))
+
     try:
-        answer5 = "29일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][28]["lunch"]))+"\n30일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][29]["lunch"]))+"\n31일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][30]["lunch"]))
+        answer5 = "29일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 29).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][28]["lunch"]))+"\n30일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 30).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][29]["lunch"]))+"\n31일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 31).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][30]["lunch"]))
     except TypeError:
         try:
-            answer5 = "29일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][28]["lunch"]))+"\n30일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][29]["lunch"]))
+            answer5 = "29일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 29).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][28]["lunch"]))+"\n30일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 30).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][29]["lunch"]))
         except TypeError:
             try:
-                answer5 = "29일: "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][28]["lunch"]))
+                answer5 = "29일 ("+days[datetime(int(datetime.now().year), int(datetime.now().month), 29).weekday()]+"): "+re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(data["menu"][28]["lunch"]))
             except TypeError:
                 answer5 = "None"
-
-
+    
     return {
         "version": "2.0",
         "template": {
             "outputs": [
                 {   
                     "simpleText": {
-                        "text": "※pb1에 추가된 기능, 현재 테스트 중인 기능이며, 오류 발생 시 아래 바로가기를 통해 제보해주시길 바랍니다.\n(급식이 없는 날은 데이터가 None 또는 공백일 수도 있습니다.)\n\n사용한 학교 급식 정보 '5d-jh/school-menu-api (NEIS 급식)'"
-                    }
-                },
-                {   
-                    "simpleText": {
-                        "text": f"{datetime.now().month}월 {datetime.now().day}일"
+                        "text": f"{datetime.now().month}월 {datetime.now().day}일 {days[datetime(int(datetime.now().year), int(datetime.now().month), int(datetime.now().day)).weekday()]}요일\n\n오류 발생 시 아래 바로가기를 통해 제보해주시길 바랍니다.\n(급식이 없는 날은 데이터가 None 또는 공백일 수도 있습니다.)\n\n사용한 학교 급식 정보 '5d-jh/school-menu-api (NEIS 급식)'"
                     }
                 },
                 {
                     "simpleText": {
-                        "text": answer1
+                        "text": str(answer1)
                     }
                 },
                 {   
                     "simpleText": {
-                        "text": answer2
+                        "text": str(answer2)
                     }
                 },
                 {   
                     "simpleText": {
-                        "text": answer3
+                        "text": str(answer3)
                     }
                 },
                 {   
                     "simpleText": {
-                        "text": answer4
+                        "text": str(answer4)
                     }
                 },
                 {   
                     "simpleText": {
-                        "text": answer5
+                        "text": str(answer5)
                     }
                 },
             ],
