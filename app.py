@@ -44,33 +44,28 @@ def food():
     req = request.get_json()
 
     bot_plugin_date : str = req["action"]["detailParams"]["bot_plugin_date"]["value"]
-    print(bot_plugin_date)
+    bot_date : str = f"{bot_plugin_date[33]}{bot_plugin_date[34]}{bot_plugin_date[35]}{bot_plugin_date[36]}{bot_plugin_date[37]}{bot_plugin_date[38]}{bot_plugin_date[39]}{bot_plugin_date[40]}{bot_plugin_date[41]}{bot_plugin_date[42]}"
 
     url = requests.get("https://schoolmenukr.ml/api/middle/B100001561")
     file = url.text
     data = json.loads(file)
     #print(re.sub("-?\d+|\'|\?|\'|\.|", "", str(data)))
 
-    date = datetime.strptime(bot_plugin_date, "%Y-%m-%d")
+    date = datetime.strptime(str(bot_date), "%Y-%m-%d")
     days = ["월", "화", "수", "목", "금", "토", "일"]
     #days[datetime(int(datetime.now().year), int(datetime.now().month), 1).weekday()]
-    print(date)
 
     now_year : int = datetime.now().year
     now_month : int = datetime.now().month
     now_day : int = datetime.now().day
 
-    print(date.day)
-
     date_food = data["menu"][date.day-1]["lunch"]
 
+    answer_title = f"{str(now_month)}월 {date.day}일 {days[datetime(now_year, now_month, now_day).weekday()]}요일"
     answer_desc : str = re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(date_food))
 
     if answer_desc == "":
         answer_desc = "급식 정보가 없습니다."
-
-    print(date_food)
-    print(answer_desc)
 
     res = {
         "version": "2.0",
@@ -78,10 +73,11 @@ def food():
             "outputs": [
                 {
                     "basicCard": {
-                        "title": f"{date.month}월 {date.day}일 {days[datetime(now_year, now_month, now_day).weekday()]}요일",
+                        "title": answer_title,
                         "description": answer_desc,
                         "thumbnail": {
-                            "imageUrl": "https://github.com/bongwonbot/bongwonbot/img/spoon.png"
+                            "imageUrl": "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/spoon.png",
+                            "fixedRatio": True
                         }
                     }
                 }
@@ -139,7 +135,7 @@ def weather():
                             }
                         ],
                         "profile": {
-                        "imageUrl": "https://github.com/bongwonbot/bongwonbot/img/white.png",
+                        "imageUrl": "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/white.png",
                         "nickname": f"{datetime.now().month}월 {datetime.now().day}일"
                         },
                         "buttons": [
