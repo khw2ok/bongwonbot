@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from flask import jsonify, Flask, request
 
-import dotenv
 import json
 import os
 import re
@@ -11,7 +10,6 @@ import requests
 
 app = Flask(__name__)
 school = School("봉원중학교")
-dotenv.load_dotenv()
 
 @app.route("/")
 def index():
