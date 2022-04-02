@@ -51,10 +51,7 @@ def food():
     data = json.loads(file)
     #print(re.sub("-?\d+|\'|\?|\'|\.|", "", str(data)))
 
-    try:
-        date = datetime.strptime(bot_plugin_date, "%Y-%m-%d")
-    except:
-        date = datetime.now()
+    date = datetime.strptime(bot_plugin_date, "%Y-%m-%d")
     days = ["월", "화", "수", "목", "금", "토", "일"]
     #days[datetime(int(datetime.now().year), int(datetime.now().month), 1).weekday()]
     print(date)
