@@ -1,7 +1,7 @@
 from comcigan import School
 from bs4 import BeautifulSoup
 from datetime import datetime
-from flask import jsonify, Flask, render_template, request
+from flask import jsonify, Flask, request
 
 import dotenv
 import json
@@ -15,7 +15,14 @@ dotenv.load_dotenv()
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return '''
+        <html>
+            <head>
+                <title>BongwonBot</title>
+                <meta http-equiv="refresh" content="0;url=https://bongwonbot.github.io"/>
+            </head>
+        </html>
+    '''
 
 @app.route("/test", methods=["POST"])
 def test():
@@ -79,7 +86,7 @@ def food():
                         "title": f"{date.month}월 {date.day}일 {days[datetime(now_year, now_month, now_day).weekday()]}요일",
                         "description": answer_desc,
                         "thumbnail": {
-                            "imageUrl": "../spoon"
+                            "imageUrl": "https://github.com/bongwonbot/bongwonbot/img/spoon.png"
                         }
                     }
                 }
@@ -137,7 +144,7 @@ def weather():
                             }
                         ],
                         "profile": {
-                        "imageUrl": "../img/white.png",
+                        "imageUrl": "https://github.com/bongwonbot/bongwonbot/img/white.png",
                         "nickname": f"{datetime.now().month}월 {datetime.now().day}일"
                         },
                         "buttons": [

@@ -2,8 +2,5 @@
 .venv/
 .env
 
-# assets
-img/
-
 # ngrok
 ngrok

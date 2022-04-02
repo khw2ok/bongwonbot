@@ -1,7 +1,7 @@
 # bongwonbot
 봉원중학교 비공식 챗봇 <small>bongwon middle school unofficial chatbot</small>
 
-![Python-v3.10.2-blue](https://img.shields.io/badge/Python-v3.10.2-blue)
+![Python-v3.10.4-blue](https://img.shields.io/badge/Python-v3.10.2-blue)
 ![license-MIT-green](https://img.shields.io/badge/license-MIT-green)
 ![last-commit](https://img.shields.io/github/last-commit/bongwonbot/bongwonbot)
 
@@ -83,9 +83,9 @@ bongwonbot
 ```
 
 ## 개발 환경
-> **언어** - Python 3.10.2  
+> **언어** - Python 3.10.4  
 > **패키지** - Flask 2.0.3 [포함 24개](requirements.txt)  
-> **서버** - [Heroku](https://heroku.com/)  
+> **서버** - [Heroku](https://heroku.com/)   
 > **OS** - [Debian 11 testing](https://www.debian.org/)
 
 ## 참고된 내용
