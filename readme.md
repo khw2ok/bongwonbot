@@ -43,7 +43,7 @@
 > - - [x] 깃허브 레포 변경; <small>`/app` to `/bongwonbot`</small>
 > - - [x] 전체적인 챗봇 구성 변경
 >   - - [ ] json template 리턴 -> json data 리턴으로 대부분 변경
->   - - [ ] 일부 발화 리턴 simpleText -> commerceCard 형식 변경
+>   - - [ ] 일부 발화 리턴 simpleText -> Card 형식 변경
 > - - [ ] 봉원중학교 챗봇 개발 알림톡 제작 *(예정)*
 > - - [ ] 스킬 추가 및 수정
 >   - - [x] 급식 정보

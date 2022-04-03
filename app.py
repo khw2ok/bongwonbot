@@ -3,12 +3,15 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from flask import jsonify, Flask, request
 
+import dotenv
 import json
 import os
 import re
+from pip import main
 import requests
 
 app = Flask(__name__)
+dotenv.load_dotenv()
 school = School("봉원중학교")
 
 @app.route("/")
@@ -54,17 +57,19 @@ def food():
     date = datetime.strptime(str(bot_date), "%Y-%m-%d")
     days = ["월", "화", "수", "목", "금", "토", "일"]
     #days[datetime(int(datetime.now().year), int(datetime.now().month), 1).weekday()]
-
-    now_year : int = datetime.now().year
     now_month : int = datetime.now().month
-    now_day : int = datetime.now().day
 
     date_food = data["menu"][date.day-1]["lunch"]
 
-    answer_title = f"{str(now_month)}월 {date.day}일 {days[datetime(now_year, now_month, now_day).weekday()]}요일"
+    answer_title = f"{str(now_month)}월 {date.day}일 {days[datetime(date.year, datetime.now().month, date.day).weekday()]}요일"
     answer_desc : str = re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(date_food))
-
+    answer_image = "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/spoon.png"
+    print(date.month)
+    print(now_month)
+    if date.month != str(now_month):
+        answer_image = "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/warning.png"
     if answer_desc == "":
+        answer_image = "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/warning.png"
         answer_desc = "급식 정보가 없습니다."
 
     res = {
@@ -76,7 +81,7 @@ def food():
                         "title": answer_title,
                         "description": answer_desc,
                         "thumbnail": {
-                            "imageUrl": "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/spoon.png",
+                            "imageUrl": answer_image,
                             "fixedRatio": True
                         }
                     }
@@ -88,75 +93,65 @@ def food():
 
 @app.route("/weather", methods=["POST"])
 def weather():
-    url1 = "https://weather.naver.com/today/09620575"
-    url2 = "https://weather.naver.com/air/09620575"
-    
-    res1 = requests.get(url1) #weather
-    soup1 = BeautifulSoup(res1.text, "html.parser")
+    apikey : str = os.environ["APIKEY"]
+    api = f"http://api.openweathermap.org/data/2.5/weather?appid={apikey}&lang=kr&q=Seoul,KR&"
 
-    res2 = requests.get(url2) #air
-    soup2 = BeautifulSoup(res2.text, "html.parser")
+    file = api.format(key=apikey)
+    url = requests.get(file)
+    data = json.loads(url.text)
 
-    #weather data from naver weather
-    weather = soup1.find_all("span", {"class":"weather"})[0].text #weather
-    temperature = soup1.find_all("div", {"class":"weather_now"})[0].text #temperature
-    max_temperature = soup1.find_all("span", {"class":"highest"})[0].text #max_temperature
-    min_temperature = soup1.find_all("span", {"class":"lowest"})[0].text #min_temperature
-    precipitation_percentage1 = soup1.find_all("span", {"class":"rainfall"})[0].text #precipitation_percentage1
-    precipitation_percentage2 = soup1.find_all("span", {"class":"rainfall"})[1].text #precipitation_percentage2
-    ultraviolet_ray = soup1.find_all("strong", {"class":"level_dsc"})[0].text #ultraviolet_ray
+    calc = lambda k: k - 273.15
 
-    #air data from naver weather
-    microdust_grade = soup2.find_all("span", {"class":"grade _cnPm10Grade"})[0].text #microdust_grade
-    microdust_value = soup2.find_all("span", {"class":"value _cnPm10Value"})[0].text #microdust_value
-    ultra_microdust_grade = soup2.find_all("span", {"class":"grade _cnPm25Grade"})[0].text #ultra_microdust_grade
-    ultra_microdust_value = soup2.find_all("span", {"class":"value _cnPm25Value"})[0].text #ultra_microdust_value
-    ozone_grade = soup2.find_all("strong", {"class":"level_dsc"})[0].texts #ozone_grade
-    ozone_value = soup2.find_all("strong", {"class":"level"})[0].texts #ozone_value
+    print(data)
 
-    r_temperature = str(re.findall('-?\d+', temperature)[0]).strip('[\'\']') #temperature
-    r_max_temperature = str(re.findall('-?\d+', max_temperature)[0]).strip('[\'\']') #max_temperature
-    r_min_temperature = str(re.findall('-?\d+', min_temperature)[0]).strip('[\'\']') #min_temperature
-    r_precipitation_percentage1 = str(re.findall('-?\d+', precipitation_percentage1)[0]).strip('[\'\']') #precipitation_percentage1
-    r_precipitation_percentage2 = str(re.findall('-?\d+', precipitation_percentage2)[0]).strip('[\'\']') #precipitation_percentage2
-
-    return {
+    res : json = {
         "version": "2.0",
         "template": {
             "outputs": [
                 {
-                    "commerceCard": {
-                        "description": f"행운동 봉원중학교의 현재 날씨 {weather}.\n\n온도: {r_temperature}° ({r_max_temperature}° / {r_min_temperature}°)\n강수량: 오전 - {round(int(r_precipitation_percentage1))}% 오후 - {round(int(r_precipitation_percentage2))}%\n자외선: {ultraviolet_ray}\n\n미세먼지: {microdust_grade} {microdust_value}㎍/㎥\n초미세먼지: {ultra_microdust_grade} {ultra_microdust_value}㎍/㎥\n\n사용한 날씨 및 대기질 정보 '네이버 날씨'",
-                        "price": 0,
-                        "currency": "won",
-                        "thumbnails": [
+                    "itemCard": {
+                        "imageTitle": {
+                            "title": "날씨",
+                            "description": "현재 서울의 날씨."
+                        },
+                        "thumbnail": {
+                            "imageUrl": "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/sun_behind_rain_cloud.png",
+                            "fixedRatio": True
+                        },
+                        "itemList": [
                             {
-                                "imageUrl": "../img/thermometer.png"
+                                "title": "날씨",
+                                "description": data['weather'][0]['description']
+                            },
+                            {
+                                "title": "기온",
+                                "description": f"{round(calc(data['main']['temp']))}° ({round(calc(data['main']['temp_min']))}° & {round(calc(data['main']['temp_max']))}°)"
+                            },
+                            {
+                                "title": "습도",
+                                "description": data['main']['humidity']
+                            },
+                            {
+                                "title": "풍속&퐁항",
+                                "description": f"{data['wind']['speed']}m/sec & {data['wind']['deg']}°"
                             }
                         ],
-                        "profile": {
-                        "imageUrl": "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/white.png",
-                        "nickname": f"{datetime.now().month}월 {datetime.now().day}일"
-                        },
+                        "itemListAlignment" : "right",
                         "buttons": [
                             {
                                 "label": "더보기",
                                 "action": "webLink",
-                                "webLinkUrl": url1
+                                "webLinkUrl": "https://openweathermap.org/city/1835848"
                             }
-                        ]
+                        ],
+                        "buttonLayout" : "vertical"
                     }
-                }
-            ],
-            "quickReplies": [
-                {
-                    "blockId": "61f0cf897953c638686710f3",
-                    "action": "message",
-                    "label": "문의하기"
                 }
             ]
         }
     }
+
+    return jsonify(res)
 
 @app.route("/timetable", methods=["POST"])
 def timetable():
