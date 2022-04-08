@@ -104,7 +104,7 @@ def weather():
 
     print(data)
 
-    res : json = {
+    res = {
         "version": "2.0",
         "template": {
             "outputs": [
@@ -112,7 +112,7 @@ def weather():
                     "itemCard": {
                         "imageTitle": {
                             "title": "날씨",
-                            "description": "현재 서울의 날씨."
+                            "description": "현재 서울의 날씨"
                         },
                         "thumbnail": {
                             "imageUrl": "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/sun_behind_rain_cloud.png",
@@ -157,30 +157,187 @@ def weather():
 def timetable():
     req = request.get_json()
 
-    grade = req["action"]["detailParams"]["bot.school.grade"]["value"]
-    _class = req["action"]["detailParams"]["bot.school.class"]["value"]
-    date = req["action"]["detailParams"]["bot.date.week"]["value"]
+    bot_school_grade = req["action"]["detailParams"]["bot_school_grade"]["value"]
+    bot_school_class = req["action"]["detailParams"]["bot_school_class"]["value"]
+    bot_date_week = req["action"]["detailParams"]["bot_date_week"]["value"]
 
-    r_grade = str(re.sub(r'[^0-9]', '', grade).strip("[\']\'"))
-    r_class = str(re.sub(r'[^0-9]', '', _class).strip("[\']\'"))
-    r_date = str(re.sub(r'[^0-9]', '', date).strip("[\']\'"))
+    req_school_grade : int = re.sub(r'[^0-9]', "", bot_school_grade)
+    req_school_class : int = re.sub(r'[^0-9]', "", bot_school_class)
+
+    if bot_date_week == "월요일":
+        req_date_week = 1
+    elif bot_date_week == "화요일":
+        req_date_week = 2
+    elif bot_date_week == "수요일":
+        req_date_week = 3
+    elif bot_date_week == "목요일":
+        req_date_week = 4
+    elif bot_date_week == "금요일":
+        req_date_week = 5
+    elif bot_date_week == "토요일":
+        req_date_week = 6
+    elif bot_date_week == "일요일":
+        req_date_week = 7
+
+    answer = school[int(req_school_grade)][int(req_school_class)][int(req_date_week) - 1]
 
     try:
-        _timetable = school[r_grade][r_class][r_date]
-    except:
-        _timetable = "에러가 발생했습니다."
-
-    return {
-        "version": "2.0",
-        "name": "timetable",
-        "data": {
-            "timetable": f"{str(_timetable)}",
-            "date": f"{r_date}",
-            "days": "",
-            "grade": f"{grade}",
-            "class": f"{_class}"
+        res = {
+            "version": "2.0",
+            "template": {
+                "outputs": [
+                    {
+                        "itemCard": {
+                            "imageTitle": {
+                                "title": f"{req_school_grade}학년 {req_school_class}반",
+                                "description": f"봉원중학교의 시간표"
+                            },
+                            "head": {
+                                "title": f"{bot_date_week} 시간표"
+                            },
+                            "thumbnail": {
+                                "imageUrl": "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/sun_behind_rain_cloud.png",
+                                "fixedRatio": True
+                            },
+                            "itemList": [
+                                {
+                                    "title": "1교시",
+                                    "description": f"{answer[0][0]} ({answer[0][2]})"
+                                },
+                                {
+                                    "title": "2교시",
+                                    "description": f"{answer[1][0]} ({answer[1][2]})"
+                                },
+                                {
+                                    "title": "3교시",
+                                    "description": f"{answer[2][0]} ({answer[2][2]})"
+                                },
+                                {
+                                    "title": "4교시",
+                                    "description": f"{answer[3][0]} ({answer[3][2]})"
+                                },
+                                {
+                                    "title": "5교시",
+                                    "description": f"{answer[4][0]} ({answer[4][2]})"
+                                },
+                                {
+                                    "title": "6교시",
+                                    "description": f"{answer[5][0]} ({answer[5][2]})"
+                                },
+                                {
+                                    "title": "7교시",
+                                    "description": f"{answer[6][0]} ({answer[6][2]})"
+                                }
+                            ],
+                            "itemListAlignment" : "left",
+                            "buttonLayout" : "vertical"
+                        }
+                    }
+                ]
+            }
         }
-    }
+
+    except IndexError:
+        try:
+            res = {
+                "version": "2.0",
+                "template": {
+                    "outputs": [
+                        {
+                            "itemCard": {
+                                "imageTitle": {
+                                    "title": f"{req_school_grade}학년 {req_school_class}반",
+                                    "description": f"봉원중학교의 시간표"
+                                },
+                                "head": {
+                                    "title": f"{bot_date_week} 시간표"
+                                },
+                                "thumbnail": {
+                                    "imageUrl": "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/sun_behind_rain_cloud.png",
+                                    "fixedRatio": True
+                                },
+                                "itemList": [
+                                    {
+                                        "title": "1교시",
+                                        "description": f"{answer[0][0]} ({answer[0][2]})"
+                                    },
+                                    {
+                                        "title": "2교시",
+                                        "description": f"{answer[1][0]} ({answer[1][2]})"
+                                    },
+                                    {
+                                        "title": "3교시",
+                                        "description": f"{answer[2][0]} ({answer[2][2]})"
+                                    },
+                                    {
+                                        "title": "4교시",
+                                        "description": f"{answer[3][0]} ({answer[3][2]})"
+                                    },
+                                    {
+                                        "title": "5교시",
+                                        "description": f"{answer[4][0]} ({answer[4][2]})"
+                                    },
+                                    {
+                                        "title": "6교시",
+                                        "description": f"{answer[5][0]} ({answer[5][2]})"
+                                    }
+                                ],
+                                "itemListAlignment" : "left",
+                                "buttonLayout" : "vertical"
+                            }
+                        }
+                    ]
+                }
+            }
+        except IndexError:
+            res = {
+                "version": "2.0",
+                "template": {
+                    "outputs": [
+                        {
+                            "itemCard": {
+                                "imageTitle": {
+                                    "title": f"{req_school_grade}학년 {req_school_class}반",
+                                    "description": f"봉원중학교의 시간표"
+                                },
+                                "head": {
+                                    "title": f"{bot_date_week} 시간표"
+                                },
+                                "thumbnail": {
+                                    "imageUrl": "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/sun_behind_rain_cloud.png",
+                                    "fixedRatio": True
+                                },
+                                "itemList": [
+                                    {
+                                        "title": "1교시",
+                                        "description": f"{answer[0][0]} ({answer[0][2]})"
+                                    },
+                                    {
+                                        "title": "2교시",
+                                        "description": f"{answer[1][0]} ({answer[1][2]})"
+                                    },
+                                    {
+                                        "title": "3교시",
+                                        "description": f"{answer[2][0]} ({answer[2][2]})"
+                                    },
+                                    {
+                                        "title": "4교시",
+                                        "description": f"{answer[3][0]} ({answer[3][2]})"
+                                    },
+                                    {
+                                        "title": "5교시",
+                                        "description": f"{answer[4][0]} ({answer[4][2]})"
+                                    }
+                                ],
+                                "itemListAlignment" : "left",
+                                "buttonLayout" : "vertical"
+                            }
+                        }
+                    ]
+                }
+            }
+
+    return jsonify(res)
 
 @app.route("/virus", methods=["POST"])
 def virus():
