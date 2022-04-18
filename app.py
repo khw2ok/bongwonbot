@@ -16,14 +16,7 @@ school = School("봉원중학교")
 
 @app.route("/")
 def index():
-    return '''
-        <html>
-            <head>
-                <title>BongwonBot</title>
-                <meta http-equiv="refresh" content="0;url=https://bongwonbot.github.io"/>
-            </head>
-        </html>
-    '''
+    return "Hello World!"
 
 @app.route("/test", methods=["POST"])
 def test():
