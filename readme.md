@@ -4,4 +4,4 @@
 
 ![Python-v3.10.4-blue](https://img.shields.io/badge/Python-v3.10.4-blue)
 ![license-MIT-green](https://img.shields.io/badge/license-MIT-green)
-![last-commit](https://img.shields.io/github/last-commit/bongwonbot/bongwonbot)
+![last-commit](https://img.shields.io/github/last-commit/khw2ok/bongwonbot)
