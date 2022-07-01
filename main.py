@@ -46,23 +46,24 @@ def api_test():
 def api_meal():
     req = request.get_json()
 
-    bot_plugin_date : str = req["action"]["detailParams"]["bot_plugin_date"]["value"]
-    bot_date = bot_plugin_date
+    bot_plugin_date = req["action"]["detailParams"]["bot_plugin_date"]["value"]
+    bot_date = bot_plugin_date[33:43]
 
     res = requests.get("https://schoolmenukr.ml/api/middle/B100001561").text
     data = json.loads(res)
-    #print(re.sub("-?\d+|\'|\?|\'|\.|", "", str(data)))
 
-    date = datetime.strptime(str(bot_date), "%Y-%m-%d")
+    date = datetime.strptime(bot_date, "%Y-%m-%d")
     days = ["월", "화", "수", "목", "금", "토", "일"]
-    now_month : int = datetime.now().month
+    now_month = datetime.now().month
 
     date_food = data["menu"][date.day-1]["lunch"]
 
-    answer_title = f"{date.month}월 {date.day}일 {days[datetime(date.year, date.month, date.day).weekday()]}요일 급식"
-    answer_desc : str = re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(date_food))
+    answer_title = f"{date.month}월 {date.day}일 {days[datetime(date.year, date.month, date.day).weekday()]}요일"
+    answer_desc = re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(date_food))
 
     if answer_desc == "":
+        answer_desc = "급식 정보가 없습니다."
+    elif date.month != datetime.now().month:
         answer_desc = "급식 정보가 없습니다."
     else:
         answer_desc = "급식 정보를 찾을 수 없습니다."
