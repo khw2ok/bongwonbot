@@ -1,5 +1,4 @@
 from comcigan import School
-from bs4 import BeautifulSoup
 from datetime import datetime
 from flask import jsonify, Flask, redirect, request, url_for
 
