@@ -54,19 +54,16 @@ def api_meal():
 
     date = datetime.strptime(bot_date, "%Y-%m-%d")
     days = ["월", "화", "수", "목", "금", "토", "일"]
-    now_month = datetime.now().month
 
     date_food = data["menu"][date.day-1]["lunch"]
 
     answer_title = f"{date.month}월 {date.day}일 {days[datetime(date.year, date.month, date.day).weekday()]}요일"
     answer_desc = re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(date_food))
 
-    if answer_desc == "":
+    if answer_desc == "" or answer_desc == None:
         answer_desc = "급식 정보가 없습니다."
-    elif date.month != datetime.now().month:
+    if date.month != datetime.now().month:
         answer_desc = "급식 정보가 없습니다."
-    else:
-        answer_desc = "급식 정보를 찾을 수 없습니다."
 
     res = {
         "version": "2.0",
