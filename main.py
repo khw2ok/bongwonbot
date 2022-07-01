@@ -1,7 +1,7 @@
 from comcigan import School
 from bs4 import BeautifulSoup
 from datetime import datetime
-from flask import jsonify, Flask, redirect, request
+from flask import jsonify, Flask, redirect, request, url_for
 
 import dotenv
 import json
@@ -16,11 +16,15 @@ school = School("봉원중학교")
 
 @app.route("/")
 def index():
-    return "Hello World!"
+    return "Hello World"
+
+@app.errorhandler(404)
+def e404(e):
+    return e
 
 @app.route("/api/")
 def api():
-    return redirect("/")
+    return redirect(url_for("index"))
 
 @app.route("/api/test", methods=["POST"])
 def api_test():
@@ -44,7 +48,7 @@ def api_meal():
     req = request.get_json()
 
     bot_plugin_date : str = req["action"]["detailParams"]["bot_plugin_date"]["value"]
-    bot_date : str = f"{bot_plugin_date[33]}{bot_plugin_date[34]}{bot_plugin_date[35]}{bot_plugin_date[36]}{bot_plugin_date[37]}{bot_plugin_date[38]}{bot_plugin_date[39]}{bot_plugin_date[40]}{bot_plugin_date[41]}{bot_plugin_date[42]}"
+    bot_date = bot_plugin_date
 
     res = requests.get("https://schoolmenukr.ml/api/middle/B100001561").text
     data = json.loads(res)
@@ -52,66 +56,34 @@ def api_meal():
 
     date = datetime.strptime(str(bot_date), "%Y-%m-%d")
     days = ["월", "화", "수", "목", "금", "토", "일"]
-    #days[datetime(int(datetime.now().year), int(datetime.now().month), 1).weekday()]
     now_month : int = datetime.now().month
 
     date_food = data["menu"][date.day-1]["lunch"]
 
-    answer_title = f"{str(now_month)}월 {date.day}일 {days[datetime(date.year, datetime.now().month, date.day).weekday()]}요일"
+    answer_title = f"{date.month}월 {date.day}일 {days[datetime(date.year, date.month, date.day).weekday()]}요일 급식"
     answer_desc : str = re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(date_food))
-    answer_image = "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/spoon.png"
 
-    if date.month != str(now_month):
-        answer_image = "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/warning.png"
-    elif answer_desc == "":
-        answer_image = "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/warning.png"
+    if answer_desc == "":
         answer_desc = "급식 정보가 없습니다."
     else:
-        answer_image = "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/spoon.png"
-
+        answer_desc = "급식 정보를 찾을 수 없습니다."
 
     res = {
         "version": "2.0",
         "template": {
             "outputs": [
                 {
-                    "itemCard": {
-                        "head": {
-                            "title": "급식"
-                        },
-                        "itemList": [
-                            {
-                                # "title": "날짜",
-                                # "description": answer_title
-                            }
-                        ],
-                        "itemListSummary": {
-                            "title": "",
-                            "description": answer_desc
+                    "basicCard": {
+                        "title": answer_title,
+                        "description": answer_desc,
+                        "thumbnail": {
+                            "imageUrl": "",
                         }
                     }
                 }
             ]
         }
     }
-
-    # res = {
-    #     "version": "2.0",
-    #     "template": {
-    #         "outputs": [
-    #             {
-    #                 "basicCard": {
-    #                     "title": answer_title,
-    #                     "description": answer_desc,
-    #                     "thumbnail": {
-    #                         "imageUrl": answer_image,
-    #                         "fixedRatio": True
-    #                     }
-    #                 }
-    #             }
-    #         ]
-    #     }
-    # }
     return jsonify(res)
 
 @app.route("/api/weather", methods=["POST"])
@@ -125,8 +97,6 @@ def api_weather():
 
     calc = lambda k: k - 273.15
 
-    print(data)
-
     res = {
         "version": "2.0",
         "template": {
@@ -135,11 +105,10 @@ def api_weather():
                     "itemCard": {
                         "imageTitle": {
                             "title": "날씨",
-                            "description": "현재 서울의 날씨"
+                            "description": "현재 서울 봉원중학교의 날씨"
                         },
                         "thumbnail": {
-                            "imageUrl": "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/sun_behind_rain_cloud.png",
-                            "fixedRatio": True
+                            "imageUrl": ""
                         },
                         "itemList": [
                             {
@@ -219,8 +188,7 @@ def api_timetable():
                                 "title": f"{bot_date_week} 시간표"
                             },
                             "thumbnail": {
-                                "imageUrl": "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/calendar.png",
-                                "fixedRatio": True
+                                "imageUrl": ""
                             },
                             "itemList": [
                                 {
@@ -275,8 +243,7 @@ def api_timetable():
                                     "title": f"{bot_date_week} 시간표"
                                 },
                                 "thumbnail": {
-                                    "imageUrl": "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/calendar.png",
-                                    "fixedRatio": True
+                                    "imageUrl": ""
                                 },
                                 "itemList": [
                                     {
@@ -327,8 +294,7 @@ def api_timetable():
                                         "title": f"{bot_date_week} 시간표"
                                     },
                                     "thumbnail": {
-                                        "imageUrl": "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/calendar.png",
-                                        "fixedRatio": True
+                                        "imageUrl": ""
                                     },
                                     "itemList": [
                                         {
@@ -374,8 +340,7 @@ def api_timetable():
                                         "title": f"{bot_date_week} 시간표"
                                     },
                                     "thumbnail": {
-                                        "imageUrl": "https://raw.githubusercontent.com/bongwonbot/bongwonbot/main/img/warning.png",
-                                        "fixedRatio": True
+                                        "imageUrl": ""
                                     },
                                     "itemList": [
                                         {
@@ -450,7 +415,11 @@ def api_quotes():
         '"사막이 아름다운 것은, 어디엔가 샘을 숨기고 있기 때문이야." - 앙투안 드 생텍쥐페리  「어린왕자」 中',
         '"어른들은 누구나 처음에는 어린이였다. 그러나 그것을 기억하는 어른은 별로 없다." - 앙투안 드 생텍쥐페리  「어린왕자」 中',
         '"바다는 비에 젖지 않는다." - 어니스트 헤밍웨이 「노인과 바다」 中',
-        '"새는 알에서 나오기 위해 투쟁한다. 알은 세계이다. 태어나려는 자는 하나의 세계를 깨뜨려야 한다. 새는 신에게로 날아간다. 그 신의 이름은 아프락사스다." - 헤르만 헤세 「데미안」 中'
+        '"새는 알에서 나오기 위해 투쟁한다. 알은 세계이다. 태어나려는 자는 하나의 세계를 깨뜨려야 한다. 새는 신에게로 날아간다. 그 신의 이름은 아프락사스다." - 헤르만 헤세 「데미안」 中',
+        '"진짜 문제는 사람들의 마음이다. 그것은 절대로 물리학이나 윤리학의 문제가 아니다." - 아인슈타인',
+        '"해야 할 것을 하라. 모든 것은 타인의 행복을 위해서, 동시에 특히 나의 행복을 위해서이다." - 톨스토이',
+        '"당신이 인생의 주인공이기 때문이다. 그 사실을 잊지마라. 지금까지 당신이 만들어온 의식적 그리고 무의식적 선택으로 인해 지금의 당신이 있는것이다." - 바바라 홀',
+        '"겨울이 오면 봄이 멀지 않으리." - 셸리'
     ]
 
     res = {
@@ -463,45 +432,5 @@ def api_quotes():
 
     return jsonify(res)
 
-@app.route("/api/virus", methods=["POST"])
-def api_virus():
-    url = "http://ncov.mohw.go.kr/"
-    
-    res = requests.get(url) #covid_virus
-    soup = BeautifulSoup(res.text, "html.parser")
-
-    infection = soup.find_all("div", {"class":"box"})[6].text #infection
-    death = soup.find_all("div", {"class":"box"})[5].text #death
-    infection_day = soup.select("div.occur_graph > table.ds_table > tbody > tr > td > span")[3].text #infection_day
-    death_day = soup.select("div.occur_graph > table.ds_table > tbody > tr > td > span")[0].text #death_day
-    vaccine1 = soup.find_all("li", {"class":"percent"})[0].text #vaccine1
-    vaccine2 = soup.find_all("li", {"class":"percent"})[1].text #vaccine2
-    vaccine3 = soup.find_all("li", {"class":"percent"})[2].text #vaccine3
-
-    r_infection = str(re.sub(r"[^0-9]", "", infection).strip("[\']\'")) #infection
-    r_death = str(re.sub(r"[^0-9]", "", death).strip("[\']\'")) #death
-    r_infection_day = str(re.sub(r"[^0-9]", "", infection_day).strip("[\']\'")) #infection_day
-    r_death_day = str(re.findall("-?\d+", death_day)).strip('[\'\']') #death_day
-
-    return {
-        "version": "2.0",
-        "name": "virus",
-        "data": {
-            "infection": f"{r_infection}",
-            "death": f"{r_death}",
-            "infection_day": f"{r_infection_day}",
-            "death_day": f"{r_death_day}"
-        }
-    }
-
-# return {
-#     "version": "1.0",
-#     "name": "info",
-#     "data": {
-#         "students": f"{r_students_num}",
-#         "teachers": f"{r_teachers_num}"
-#     }
-# }
-
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port="8000")
