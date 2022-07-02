@@ -49,20 +49,18 @@ def api_meal():
     bot_plugin_date = req["action"]["detailParams"]["bot_plugin_date"]["value"]
     bot_date = bot_plugin_date[33:43]
 
-    res = requests.get("https://schoolmenukr.ml/api/middle/B100001561").text
-    data = json.loads(res)
-
     date = datetime.strptime(bot_date, "%Y-%m-%d")
     days = ["월", "화", "수", "목", "금", "토", "일"]
 
+    res = requests.get(f"https://schoolmenukr.ml/api/middle/B100001561?month={date.month}&allergy=hidden").text
+    data = json.loads(res)
+
     date_food = data["menu"][date.day-1]["lunch"]
 
-    answer_title = f"{date.month}월 {date.day}일 {days[datetime(date.year, date.month, date.day).weekday()]}요일"
-    answer_desc = re.sub("-?\d+|\'|\.|\'|\#|\'|\[|\'|\]", "", str(date_food))
+    answer_title = f"{date.month}월 {date.day}일 {days[datetime(date.year, date.month, date.day).weekday()-1]}요일"
+    answer_desc = re.sub("#|\'|\[|\'|\]", "", str(date_food))
 
     if answer_desc == "" or answer_desc == None:
-        answer_desc = "급식 정보가 없습니다."
-    if date.month != datetime.now().month:
         answer_desc = "급식 정보가 없습니다."
 
     res = {
@@ -86,11 +84,8 @@ def api_meal():
 @app.route("/api/weather", methods=["POST"])
 def api_weather():
     apikey : str = os.environ["WEATHER_APIKEY"]
-    api = f"http://api.openweathermap.org/data/2.5/weather?appid={apikey}&lang=kr&q=Seoul,KR&"
-
-    file = api.format(key=apikey)
-    url = requests.get(file)
-    data = json.loads(url.text)
+    res = requests.get(f"http://api.openweathermap.org/data/2.5/weather?appid={apikey}&lang=kr&q=Seoul,KR&".format(key=apikey))
+    data = json.loads(res.text)
 
     calc = lambda k: k - 273.15
 
