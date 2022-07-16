@@ -1,6 +1,5 @@
-# environments
 .venv/
-.env
+tmp/
 
-# ngrok
+.env
 ngrok
