@@ -1,6 +1,7 @@
 from comcigan import School
 from datetime import datetime
-from flask import jsonify, Flask, redirect, request, url_for
+from flask import Flask, jsonify, redirect, render_template, request, url_for
+from hanspell import spell_checker
 
 import dotenv
 import json
@@ -10,42 +11,41 @@ import re
 import requests
 
 app = Flask(__name__)
-dotenv.load_dotenv()
 school = School("봉원중학교")
+dotenv.load_dotenv()
 
 @app.route("/")
 def index():
-    return "Hello World"
+    return render_template("index.html")
 
 @app.errorhandler(404)
 def e404(e):
     return e
 
-@app.route("/api/")
+@app.route("/api")
 def api():
     return redirect(url_for("index"))
 
 @app.route("/api/test", methods=["POST"])
 def api_test():
+    req = request.get_json()
     res = {
         "version": "2.0",
         "template": {
             "outputs": [
                 {
                     "simpleText": {
-                        "text": "안녕하세요!"
+                        "text": req["userRequest"]["user"]["id"]
                     }
                 }
             ]
         }
     }
-
     return jsonify(res)
 
 @app.route("/api/meal", methods=["POST"])
 def api_meal():
     req = request.get_json()
-
     bot_plugin_date = req["action"]["detailParams"]["bot_plugin_date"]["value"]
     bot_date = bot_plugin_date[33:43]
 
@@ -134,13 +134,11 @@ def api_weather():
             ]
         }
     }
-
     return jsonify(res)
 
 @app.route("/api/timetable", methods=["POST"])
 def api_timetable():
     req = request.get_json()
-
     bot_school_grade = req["action"]["detailParams"]["bot_school_grade"]["value"]
     bot_school_class = req["action"]["detailParams"]["bot_school_class"]["value"]
     bot_date_week = req["action"]["detailParams"]["bot_date_week"]["value"]
@@ -347,48 +345,29 @@ def api_timetable():
                         ]
                     }
                 }
-
     return jsonify(res)
 
-@app.route("/api/plan")
-def api_plan():
-    # req = request.get_json()
-
-    # bot_plugin_date : str = req["action"]["detailParams"]["bot_plugin_date"]["value"]
-
-    # date = datetime.strptime(str(bot_date), "%Y-%m-%d")
-
-    api_key : str = os.environ["NEIS_APIKEY"]
-    if datetime.now().month < 10:
-        url = f"https://open.neis.go.kr/hub/SchoolSchedule?KEY={api_key}&Type=json&ATPT_OFCDC_SC_CODE=B10&SD_SCHUL_CODE=7132140&AA_FROM_YMD={datetime.now().year}0{datetime.now().month}01&AA_TO_YMD={datetime.now().year}0{datetime.now().month}32"
-    else:
-        url = f"https://open.neis.go.kr/hub/SchoolSchedule?KEY={api_key}&Type=json&ATPT_OFCDC_SC_CODE=B10&SD_SCHUL_CODE=7132140&AA_FROM_YMD={datetime.now().year}{datetime.now().month}01&AA_TO_YM={datetime.now().year}{datetime.now().month}32"
-
-    res = requests.get(url).text
-    data = json.loads(res)
-    #print(re.sub("-?\d+|\'|\?|\'|\.|", "", str(data)))
-
-    print(data["SchoolSchedule"][0]["head"][0]["list_total_count"])
-    print(data["SchoolSchedule"][1]["row"][-1])
-
+@app.route("/api/spellcheck", methods=["POST"])
+def api_spellcheck():
+    req = request.get_json()
+    sys_text = req["action"]["detailParams"]["sys_text"]["value"]
     res = {
         "version": "2.0",
         "template": {
             "outputs": [
                 {
                     "basicCard": {
-                        "title": "answer_title",
-                        "description": "answer_desc",
+                        "title": "고쳐진 문장",
+                        "description": f"{spell_checker.check(sys_text).original}\n-> {spell_checker.check(sys_text).checked}",
                         "thumbnail": {
-                            "imageUrl": "answer_image",
-                            "fixedRatio": True
+                            "imageUrl": "",
                         }
                     }
                 }
             ]
         }
     }
-    return jsonify(data["SchoolSchedule"][1]["row"][-1])
+    return jsonify(res)
 
 @app.route("/api/quotes", methods=["POST"])
 def api_quotes():
@@ -421,8 +400,7 @@ def api_quotes():
             "quote": random.choice(list)
         }
     }
-
     return jsonify(res)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", debug=True)
