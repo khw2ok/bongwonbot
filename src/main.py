@@ -358,7 +358,7 @@ def api_spellcheck():
                 {
                     "basicCard": {
                         "title": "고쳐진 문장",
-                        "description": f"{spell_checker.check(sys_text).original}\n-> {spell_checker.check(sys_text).checked}",
+                        "description": f"{spell_checker.check(sys_text).original} => {spell_checker.check(sys_text).checked}",
                         "thumbnail": {
                             "imageUrl": "",
                         }
