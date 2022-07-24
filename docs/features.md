@@ -3,17 +3,17 @@
 https://bongwonbot.run.goorm.io
 
 ## Features
-|Name|Value|Location|Latest Update|
-|:---:|:---|:---|:---:|
+|Name<div style='width: 75px;'></div>|Description<div style='width: 200px;'></div>|Location<div style='width: 100px;'></div>|Version<div style='width: 75px;'></div>|
+|:---|:---|:---|:---|
 |test|Check the user id|/api/test|dev3.2-b1|
-|meal|Check the school meal|/api/meal|v3.11|
+|meal|Check the school meal|/api/meal|dev3.2-b2|
 |weather|Check the school weather|/api/weather|v3.11|
-|timetable|Check the school timetable|/api/timetable|v3.11|
+|timetable|Check the school timetable|/api/timetable|dev3.2-b2|
 |spellcheck|Correct the spelling|/api/spellcheck|dev3.2-b1|
 |quotes|Get quotes|/api/quotes|v3.11|
 
 ### Removed Fetures
-|Name|Value|Location|Deleted Update|
-|:---:|:---|:---|:---:|
+|Name<div style='width: 75px;'></div>|Description<div style='width: 200px;'></div>|Location<div style='width: 100px;'></div>|Version<div style='width: 75px;'></div>|
+|:---|:---|:---|:---|
 |virus|Get C19 virus informations|/api/virus|v3.11|
 |info|Check the school informations|/api/info|v3.0|
