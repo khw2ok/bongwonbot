@@ -1,377 +1,212 @@
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+app = FastAPI(
+    title='bongwonbot',
+    description='Chatbot, <b>@bongwonbot</b> made by python.',
+    version='dev3.2',
+    docs_url='/',
+    terms_of_service='https://bongwon.kro.kr/terms',
+    contact={'email': 'idkimwook@gmail.com'},
+    license_info={'name': 'MIT License', 'url': 'https://opensource.org/licenses/MIT'}
+)
+
 from comcigan import School
+school = School('봉원중학교')
+
 from datetime import datetime
-from flask import Flask, jsonify, redirect, render_template, request, url_for
 from hanspell import spell_checker
 
 import dotenv
+dotenv.load_dotenv()
+
 import json
 import os
 import random
 import re
 import requests
 
-app = Flask(__name__)
-school = School("봉원중학교")
-dotenv.load_dotenv()
+class botParams():
+    sys_plugin_date: str
+    bot_school_grade: int
+    bot_school_class: int
+    bot_date_week: str
+    sys_text: str
 
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-@app.errorhandler(404)
-def e404(e):
-    return e
-
-@app.route("/api")
-def api():
-    return redirect(url_for("index"))
-
-@app.route("/api/test", methods=["POST"])
-def api_test():
-    req = request.get_json()
+@app.post('/api/test', description='Check the user id.', response_class=JSONResponse)
+async def api_test(request:Request):
+    req = await request.json()
     res = {
-        "version": "2.0",
-        "template": {
-            "outputs": [
+        'version': '2.0',
+        'template': {
+            'outputs': [
                 {
-                    "simpleText": {
-                        "text": req["userRequest"]["user"]["id"]
+                    'simpleText': {
+                        'text': req['userRequest']['user']['id']
                     }
                 }
             ]
         }
     }
-    return jsonify(res)
+    return res
 
-@app.route("/api/meal", methods=["POST"])
-def api_meal():
-    req = request.get_json()
-    bot_plugin_date = req["action"]["detailParams"]["bot_plugin_date"]["value"]
-    bot_date = bot_plugin_date[33:43]
-
-    date = datetime.strptime(bot_date, "%Y-%m-%d")
-    days = ["월", "화", "수", "목", "금", "토", "일"]
-
-    res = requests.get(f"https://schoolmenukr.ml/api/middle/B100001561?month={date.month}&allergy=hidden").text
-    data = json.loads(res)
-
-    date_food = data["menu"][date.day-1]["lunch"]
-
-    answer_title = f"{date.month}월 {date.day}일 {days[datetime(date.year, date.month, date.day).weekday()-1]}요일"
-    answer_desc = re.sub("#|\'|\[|\'|\]", "", str(date_food))
-
-    if answer_desc == "" or answer_desc == None:
-        answer_desc = "급식 정보가 없습니다."
-
+@app.post('/api/meal', description='Check the school meal.', response_class=JSONResponse)
+async def api_meal(request:Request):
+    req = await request.json()
+    botParams.sys_plugin_date = req['action']['detailParams']['sys_plugin_date']['value']
+    req_plugin_date = datetime.strptime(botParams.sys_plugin_date[33:43], '%Y-%m-%d')
+    res_days = ['월', '화', '수', '목', '금', '토', '일']
+    res_api = requests.get(f'https://schoolmenukr.ml/api/middle/B100001561?year={req_plugin_date.year}&month={req_plugin_date.month}&allergy=hidden').text
+    res_api_data = json.loads(res_api)
+    res_meal = re.sub("#|\'|\[|\'|\]", '', str(res_api_data['menu'][req_plugin_date.day-1]['lunch']))
+    if res_meal == '' or res_meal == None:
+        res_meal = '급식 정보가 없습니다.'
     res = {
-        "version": "2.0",
-        "template": {
-            "outputs": [
+        'version': '2.0',
+        'template': {
+            'outputs': [
                 {
-                    "basicCard": {
-                        "title": answer_title,
-                        "description": answer_desc,
-                        "thumbnail": {
-                            "imageUrl": "",
+                    'basicCard': {
+                        'title': f'{req_plugin_date.year}년 {req_plugin_date.month}월 {req_plugin_date.day}일 {res_days[datetime(req_plugin_date.year, req_plugin_date.month, req_plugin_date.day).weekday()-1]}요일',
+                        'description': res_meal,
+                        'thumbnail': {
+                            'imageUrl': '',
                         }
                     }
                 }
             ]
         }
     }
-    return jsonify(res)
+    return res
 
-@app.route("/api/weather", methods=["POST"])
-def api_weather():
-    apikey : str = os.environ["WEATHER_APIKEY"]
-    res = requests.get(f"http://api.openweathermap.org/data/2.5/weather?appid={apikey}&lang=kr&q=Seoul,KR&".format(key=apikey))
-    data = json.loads(res.text)
-
-    calc = lambda k: k - 273.15
-
-    res = {
-        "version": "2.0",
-        "template": {
-            "outputs": [
-                {
-                    "itemCard": {
-                        "imageTitle": {
-                            "title": "날씨",
-                            "description": "현재 서울 봉원중학교의 날씨"
-                        },
-                        "thumbnail": {
-                            "imageUrl": ""
-                        },
-                        "itemList": [
-                            {
-                                "title": "날씨",
-                                "description": data['weather'][0]['description']
-                            },
-                            {
-                                "title": "기온",
-                                "description": f"{round(calc(data['main']['temp']))}° ({round(calc(data['main']['temp_min']))}° & {round(calc(data['main']['temp_max']))}°)"
-                            },
-                            {
-                                "title": "습도",
-                                "description": data['main']['humidity']
-                            },
-                            {
-                                "title": "풍속&퐁항",
-                                "description": f"{data['wind']['speed']}m/sec & {data['wind']['deg']}°"
-                            }
-                        ],
-                        "itemListAlignment" : "right",
-                        "buttons": [
-                            {
-                                "label": "더보기",
-                                "action": "webLink",
-                                "webLinkUrl": "https://openweathermap.org/city/1835848"
-                            }
-                        ],
-                        "buttonLayout" : "vertical"
-                    }
-                }
-            ]
-        }
+@app.post('/api/timetable', description='Check the school weather.', response_class=JSONResponse)
+async def api_timetable(request:Request):
+    req = await request.json()
+    botParams.bot_school_grade = req['action']['detailParams']['bot_school_grade']['value']
+    botParams.bot_school_class = req['action']['detailParams']['bot_school_class']['value']
+    botParams.bot_date_week = req['action']['detailParams']['bot_date_week']['value']
+    req_school_grade = re.sub(r'[^0-9]', '', botParams.bot_school_grade)
+    req_school_class = re.sub(r'[^0-9]', '', botParams.bot_school_class)
+    req_date_week = {
+        '월요일': 0,
+        '화요일': 1,
+        '수요일': 2,
+        '목요일': 3,
+        '금요일': 4,
+        '토요일': 5,
+        '일요일': 6
     }
-    return jsonify(res)
-
-@app.route("/api/timetable", methods=["POST"])
-def api_timetable():
-    req = request.get_json()
-    bot_school_grade = req["action"]["detailParams"]["bot_school_grade"]["value"]
-    bot_school_class = req["action"]["detailParams"]["bot_school_class"]["value"]
-    bot_date_week = req["action"]["detailParams"]["bot_date_week"]["value"]
-
-    req_school_grade : int = re.sub(r'[^0-9]', "", bot_school_grade)
-    req_school_class : int = re.sub(r'[^0-9]', "", bot_school_class)
-
-    if bot_date_week == "월요일":
-        req_date_week = 1
-    elif bot_date_week == "화요일":
-        req_date_week = 2
-    elif bot_date_week == "수요일":
-        req_date_week = 3
-    elif bot_date_week == "목요일":
-        req_date_week = 4
-    elif bot_date_week == "금요일":
-        req_date_week = 5
-    elif bot_date_week == "토요일":
-        req_date_week = 6
-    elif bot_date_week == "일요일":
-        req_date_week = 7
-
-    answer = school[int(req_school_grade)][int(req_school_class)][int(req_date_week) - 1]
-
-    try:
-        res = {
-            "version": "2.0",
-            "template": {
-                "outputs": [
-                    {
-                        "itemCard": {
-                            "imageTitle": {
-                                "title": f"{req_school_grade}학년 {req_school_class}반",
-                                "description": f"봉원중학교의 시간표"
-                            },
-                            "head": {
-                                "title": f"{bot_date_week} 시간표"
-                            },
-                            "thumbnail": {
-                                "imageUrl": ""
-                            },
-                            "itemList": [
-                                {
-                                    "title": "1교시",
-                                    "description": f"{answer[0][0]} ({answer[0][2]})"
-                                },
-                                {
-                                    "title": "2교시",
-                                    "description": f"{answer[1][0]} ({answer[1][2]})"
-                                },
-                                {
-                                    "title": "3교시",
-                                    "description": f"{answer[2][0]} ({answer[2][2]})"
-                                },
-                                {
-                                    "title": "4교시",
-                                    "description": f"{answer[3][0]} ({answer[3][2]})"
-                                },
-                                {
-                                    "title": "5교시",
-                                    "description": f"{answer[4][0]} ({answer[4][2]})"
-                                },
-                                {
-                                    "title": "6교시",
-                                    "description": f"{answer[5][0]} ({answer[5][2]})"
-                                },
-                                {
-                                    "title": "7교시",
-                                    "description": f"{answer[6][0]} ({answer[6][2]})"
-                                }
-                            ],
-                            "itemListAlignment" : "left",
-                            "buttonLayout" : "vertical"
-                        }
-                    }
-                ]
-            }
-        }
-    except IndexError:
+    res_date_week = req_date_week[botParams.bot_date_week]
+    res_timetable = school[int(req_school_grade)][int(req_school_class)][int(res_date_week)]
+    res_timetable_class = []
+    for i in range(9):
         try:
-            res = {
-                "version": "2.0",
-                "template": {
-                    "outputs": [
-                        {
-                            "itemCard": {
-                                "imageTitle": {
-                                    "title": f"{req_school_grade}학년 {req_school_class}반",
-                                    "description": f"봉원중학교의 시간표"
-                                },
-                                "head": {
-                                    "title": f"{bot_date_week} 시간표"
-                                },
-                                "thumbnail": {
-                                    "imageUrl": ""
-                                },
-                                "itemList": [
-                                    {
-                                        "title": "1교시",
-                                        "description": f"{answer[0][0]} ({answer[0][2]})"
-                                    },
-                                    {
-                                        "title": "2교시",
-                                        "description": f"{answer[1][0]} ({answer[1][2]})"
-                                    },
-                                    {
-                                        "title": "3교시",
-                                        "description": f"{answer[2][0]} ({answer[2][2]})"
-                                    },
-                                    {
-                                        "title": "4교시",
-                                        "description": f"{answer[3][0]} ({answer[3][2]})"
-                                    },
-                                    {
-                                        "title": "5교시",
-                                        "description": f"{answer[4][0]} ({answer[4][2]})"
-                                    },
-                                    {
-                                        "title": "6교시",
-                                        "description": f"{answer[5][0]} ({answer[5][2]})"
-                                    }
-                                ],
-                                "itemListAlignment" : "left",
-                                "buttonLayout" : "vertical"
-                            }
-                        }
-                    ]
-                }
-            }
+            res_timetable_class.append({
+                    'title': f'{i+1}교시',
+                    'description': f'{res_timetable[i][1]} ({res_timetable[i][2]})'
+                })
         except IndexError:
-            try:
-                res = {
-                    "version": "2.0",
-                    "template": {
-                        "outputs": [
-                            {
-                                "itemCard": {
-                                    "imageTitle": {
-                                        "title": f"{req_school_grade}학년 {req_school_class}반",
-                                        "description": f"봉원중학교의 시간표"
-                                    },
-                                    "head": {
-                                        "title": f"{bot_date_week} 시간표"
-                                    },
-                                    "thumbnail": {
-                                        "imageUrl": ""
-                                    },
-                                    "itemList": [
-                                        {
-                                            "title": "1교시",
-                                            "description": f"{answer[0][0]} ({answer[0][2]})"
-                                        },
-                                        {
-                                            "title": "2교시",
-                                            "description": f"{answer[1][0]} ({answer[1][2]})"
-                                        },
-                                        {
-                                            "title": "3교시",
-                                            "description": f"{answer[2][0]} ({answer[2][2]})"
-                                        },
-                                        {
-                                            "title": "4교시",
-                                            "description": f"{answer[3][0]} ({answer[3][2]})"
-                                        },
-                                        {
-                                            "title": "5교시",
-                                            "description": f"{answer[4][0]} ({answer[4][2]})"
-                                        }
-                                    ],
-                                    "itemListAlignment" : "left",
-                                    "buttonLayout" : "vertical"
-                                }
-                            }
-                        ]
-                    }
-                }
-            except:
-                res = {
-                    "version": "2.0",
-                    "template": {
-                        "outputs": [
-                            {
-                                "itemCard": {
-                                    "imageTitle": {
-                                        "title": f"{req_school_grade}학년 {req_school_class}반",
-                                        "description": f"봉원중학교의 시간표"
-                                    },
-                                    "head": {
-                                        "title": f"{bot_date_week} 시간표"
-                                    },
-                                    "thumbnail": {
-                                        "imageUrl": ""
-                                    },
-                                    "itemList": [
-                                        {
-                                            "title": "오류",
-                                            "description": f"{req_school_grade}학년 {req_school_class}반 {bot_date_week} 시간표를 찾을 수 없습니다."
-                                        }
-                                    ],
-                                    "itemListAlignment" : "left",
-                                    "buttonLayout" : "vertical"
-                                }
-                            }
-                        ]
-                    }
-                }
-    return jsonify(res)
-
-@app.route("/api/spellcheck", methods=["POST"])
-def api_spellcheck():
-    req = request.get_json()
-    sys_text = req["action"]["detailParams"]["sys_text"]["value"]
+            res_timetable_class.append({'contents': 'items not found.'})
+    print(res_timetable_class)
     res = {
-        "version": "2.0",
-        "template": {
-            "outputs": [
+        'version': '2.0',
+        'template': {
+            'outputs': [
                 {
-                    "basicCard": {
-                        "title": "고쳐진 문장",
-                        "description": f"{spell_checker.check(sys_text).original} => {spell_checker.check(sys_text).checked}",
-                        "thumbnail": {
-                            "imageUrl": "",
-                        }
+                    'itemCard': {
+                        'head': {
+                            'title': f'{req_school_grade}학년 {req_school_class}반 {botParams.bot_date_week} 시간표'
+                        },
+                        'itemList': [
+                            res_timetable_class[0],
+                            res_timetable_class[1],
+                            res_timetable_class[2],
+                            res_timetable_class[3],
+                            res_timetable_class[4],
+                            res_timetable_class[5],
+                            res_timetable_class[6],
+                        ],
+                        'itemListAlignment': 'left',
+                        'buttonLayout': 'vertical'
                     }
                 }
             ]
         }
     }
-    return jsonify(res)
+    return res
 
-@app.route("/api/quotes", methods=["POST"])
-def api_quotes():
-    list = [
+@app.post('/api/weather', description='Check the school timetable.', response_class=JSONResponse)
+async def api_weather():
+    res_api = requests.get(f'http://api.openweathermap.org/data/2.5/weather?appid={os.environ["WEATHER_APIKEY"]}&lang=kr&q=Seoul,KR'.format(key=os.environ['WEATHER_APIKEY'])).text
+    res_api_data = json.loads(res_api)
+    res_calc = lambda k: k - 273.15
+    res = {
+        'version': '2.0',
+        'template': {
+            'outputs': [
+                {
+                    'itemCard': {
+                        'imageTitle': {
+                            'title': '날씨',
+                            'description': '현재 서울 봉원중학교의 날씨'
+                        },
+                        'thumbnail': {
+                            'imageUrl': ''
+                        },
+                        'itemList': [
+                            {
+                                'title': '날씨',
+                                'description': res_api_data['weather'][0]['description']
+                            },
+                            {
+                                'title': '기온',
+                                'description': f'{round(res_calc(res_api_data["main"]["temp"]))}° ({round(res_calc(res_api_data["main"]["temp_min"]))}° & {round(res_calc(res_api_data["main"]["temp_max"]))}°)'
+                            },
+                            {
+                                'title': '습도',
+                                'description': res_api_data['main']['humidity']
+                            },
+                            {
+                                'title': '풍속&퐁항',
+                                'description': f'{res_api_data["wind"]["speed"]}m/sec & {res_api_data["wind"]["deg"]}°'
+                            }
+                        ],
+                        'itemListAlignment' : 'right',
+                        'buttons': [
+                            {
+                                'label': '더보기',
+                                'action': 'webLink',
+                                'webLinkUrl': 'https://openweathermap.org/city/1835848'
+                            }
+                        ],
+                        'buttonLayout' : 'vertical'
+                    }
+                }
+            ]
+        }
+    }
+    return res
+
+@app.post('/api/spellcheck', description='Correct the spelling.', response_class=JSONResponse)
+async def api_spellcheck(request:Request):
+    req = await request.json()
+    botParams.sys_text = req["action"]["detailParams"]["sys_text"]["value"]
+    res = {
+        'version': '2.0',
+        'template': {
+            'outputs': [
+                {
+                    'simpleText': {
+                        'text': f'{spell_checker.check(botParams.sys_text).original} => {spell_checker.check(botParams.sys_text).checked}'
+                    }
+                }
+            ]
+        }
+    }
+    return res
+
+@app.post('/api/quotes', description='Get quotes.', response_class=JSONResponse)
+async def api_quotes():
+    res_quotes = [
         '"피할수 없으면 즐겨라." - 로버트 엘리엇',
         '"행복의 문이 하나 닫히면 다른 문이 열린다. 그러나 우리는 종종 닫힌 문을 멍하니 바라보다가 우리를 향해 열린 문을 보지 못하게 된다." - 헬렌 켈러',
         '"나 자신에 대한 자신감을 잃으면온 세상이 나의 적이 된다." - 랄프 왈도 에머슨',
@@ -392,15 +227,11 @@ def api_quotes():
         '"당신이 인생의 주인공이기 때문이다. 그 사실을 잊지마라. 지금까지 당신이 만들어온 의식적 그리고 무의식적 선택으로 인해 지금의 당신이 있는것이다." - 바바라 홀',
         '"겨울이 오면 봄이 멀지 않으리." - 셸리'
     ]
-
     res = {
-        "version": "1.0",
-        "name": "quotes",
-        "data": {
-            "quote": random.choice(list)
+        'version': '1.0',
+        'name': 'quotes',
+        'data': {
+            'quote': random.choice(res_quotes)
         }
     }
-    return jsonify(res)
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True)
+    return res
