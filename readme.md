@@ -3,7 +3,6 @@
 
 ![Python-v3.7.4-blue](https://img.shields.io/badge/Python-v3.7.4-blue)
 ![license-MIT-green](https://img.shields.io/badge/license-MIT-green)
-![last-commit](https://img.shields.io/github/last-commit/khw2ok/bongwonbot)
 
 ## Run Application
 ```bash
@@ -25,9 +24,9 @@ NEIS_APIKEY
 - OS        : Debian bookworm/sid
 - IDE       : VSCode
 - Python    : 3.7.4
-- PIP       : 22.2
-  - FastAPI : 0.79.0
-  - Uvicorn : 0.18.2
+- PIP       : 22.2.2
+  - FastAPI : 0.81.0
+  - Uvicorn : 0.18.3
 
 ## Features
 [기능들](docs/features.md)
