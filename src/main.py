@@ -63,7 +63,7 @@ async def api_meal(request:Request):
             'outputs': [
                 {
                     'basicCard': {
-                        'title': f'{req_plugin_date.year}년 {req_plugin_date.month}월 {req_plugin_date.day}일 {res_days[datetime(req_plugin_date.year, req_plugin_date.month, req_plugin_date.day).weekday()-1]}요일',
+                        'title': f'{req_plugin_date.year}년 {req_plugin_date.month}월 {req_plugin_date.day}일 {res_days[datetime(req_plugin_date.year, req_plugin_date.month, req_plugin_date.day).weekday()]}요일',
                         'description': f'{res_meal}',
                         'thumbnail': {
                             'imageUrl': '',
