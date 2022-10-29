@@ -19,27 +19,153 @@ import dotenv
 dotenv.load_dotenv()
 
 import json
+data = json.load(open('data.json'))
+
 import os
 import re
 import requests
 
-class botParams():
-    sys_plugin_date: str
-    bot_school_grade: int
-    bot_school_class: int
-    sys_text: str
+def checkDB(req):
+    if req['userRequest']['user']['id'] not in data:
+        data[req['userRequest']['user']['id']] = {
+            'usage': 0,
+            'config': {
+                'grade': None,
+                'class': None
+            }
+        }
+        json.dump(data, open('data.json', 'w'), indent=4)
 
-@app.post('/api/test', description='Check the user id.', response_class=JSONResponse)
-async def api_test(request:Request):
+def addUsage(req):
+    checkDB(req)
+    data[req['userRequest']['user']['id']]['usage'] = data[req['userRequest']['user']['id']]['usage']+1
+    json.dump(data, open('data.json', 'w'), indent=4)
+
+@app.post('/api/welcome', description='', response_class=JSONResponse)
+async def api_welcome(request:Request):
     req = await request.json()
+    addUsage(req)
+    if req['userRequest']['user']['id'] in data:
+        res = {
+            'version': '2.0',
+            'template': {
+                'outputs': [
+                    {
+                        'basicCard': {
+                            'title': '안녕하세요',
+                            'description': '저는 봉원중학교의 생활을 더욱 편리하게 만들어줄 \'봉원중학교 챗봇\'입니다.',
+                            'thumbnails': {
+                                'imageUrl': ''
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    else:
+        checkDB(req)
+        res = {
+            'version': '2.0',
+            'template': {
+                'outputs': [
+                    {
+                        'basicCard': {
+                            'title': '안녕하세요',
+                            'description': '저는 봉원중학교의 생활을 더욱 편리하게 만들어줄 \'봉원중학교 챗봇\'입니다.',
+                            'thumbnails': {
+                                'imageUrl': ''
+                            }
+                        }
+                    },
+                    {
+                        'basicCard': {
+                            'title': '이용이 처음이신가요?',
+                            'description': '챗봇 도움말에 이용에 도움이 될 만한 정보를 알 수 있습니다.',
+                            'thumbnails': {
+                                'imageUrl': ''
+                            },
+                            'buttons': [
+                                {
+                                    'label': '확인하기',
+                                    'action': 'webLink',
+                                    'webLinkUrl': 'https://b1bot.kro.kr/docs'
+                                }
+                            ],
+                        }
+                    }
+                ]
+            }
+        }
+    return res
+
+@app.post('/api/config', description='', response_class=JSONResponse)
+async def api_config(request:Request):
+    req = await request.json()
+    checkDB(req)
+    addUsage(req)
+    params_bot_school_grade = req['action']['detailParams']['bot_school_grade']['value']
+    params_bot_school_class = req['action']['detailParams']['bot_school_class']['value']
+    res_school_grade = re.sub(r'[^0-9]', '', params_bot_school_grade)
+    res_school_class = re.sub(r'[^0-9]', '', params_bot_school_class)
+    data[req['userRequest']['user']['id']] = {
+        'usage': 0,
+        'config': {
+            'grade': int(res_school_grade),
+            'class': int(res_school_class)
+        }
+    }
+    json.dump(data, open('data.json', 'w'), indent=4)
+    res = {
+            'version': '2.0',
+            'template': {
+                'outputs': [
+                    {
+                        'basicCard': {
+                            'title': '설정이 완료 되었습니다.',
+                            'description': f'{res_school_grade}학년 {res_school_class}반으로 설정이 완료되었습니다.',
+                            'thumbnails': {
+                                'imageUrl': ''
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    return res
+
+@app.post('/api/info', description='', response_class=JSONResponse)
+async def api_info(request:Request):
+    req = await request.json()
+    checkDB(req)
+    addUsage(req)
     res = {
         'version': '2.0',
         'template': {
             'outputs': [
                 {
-                    'simpleText': {
-                        'text': req['userRequest']['user']['id']
+                    'itemCard': {
+                        'head': {
+                            'title': req['userRequest']['user']['id'],
+                        },
+                        'itemList': [
+                            {
+                                'title': '챗봇 이용률',
+                                'description': f'{data[req["userRequest"]["user"]["id"]]["usage"]}'
+                            },
+                            {
+                                'title': '학급',
+                                'description': f'{data[req["userRequest"]["user"]["id"]]["config"]["grade"]}학년 {data[req["userRequest"]["user"]["id"]]["config"]["class"]}반'
+                            }
+                        ],
+                        'itemListAlignment' : 'right'
                     }
+                }
+            ],
+            'quickReplies': [
+                {
+                    'label': '학급 설정하기',
+                    'action': 'block',
+                    'blockId': '635c946c7d0dc94f4d60f044'
                 }
             ]
         }
@@ -49,8 +175,8 @@ async def api_test(request:Request):
 @app.post('/api/meal', description='Check the school meal.', response_class=JSONResponse)
 async def api_meal(request:Request):
     req = await request.json()
-    botParams.sys_plugin_date = req['action']['detailParams']['sys_plugin_date']['value']
-    req_plugin_date = datetime.strptime(botParams.sys_plugin_date[33:43], '%Y-%m-%d')
+    params_sys_plugin_date = req['action']['detailParams']['sys_plugin_date']['value']
+    req_plugin_date = datetime.strptime(params_sys_plugin_date[33:43], '%Y-%m-%d')
     res_days = ['월', '화', '수', '목', '금', '토', '일']
     res_api = requests.get(f'https://schoolmenukr.ml/api/middle/B100001561?year={req_plugin_date.year}&month={req_plugin_date.month}&date={req_plugin_date.day}&allergy=hidden').text
     res_api_data = json.loads(res_api)
@@ -75,14 +201,38 @@ async def api_meal(request:Request):
     }
     return res
 
-@app.post('/api/timetable', description='Check the school weather.', response_class=JSONResponse)
+@app.post('/api/timetable', description='', response_class=JSONResponse)
 async def api_timetable(request:Request):
     req = await request.json()
-    botParams.bot_school_grade = req['action']['detailParams']['bot_school_grade']['value']
-    botParams.bot_school_class = req['action']['detailParams']['bot_school_class']['value']
-    req_school_grade = re.sub(r'[^0-9]', '', botParams.bot_school_grade)
-    req_school_class = re.sub(r'[^0-9]', '', botParams.bot_school_class)
-    res_timetable = school[int(req_school_grade)][int(req_school_class)]
+    checkDB(req)
+    res_school_grade = data[req['userRequest']['user']['id']]['config']['grade']
+    res_school_class = data[req['userRequest']['user']['id']]['config']['class']
+    if res_school_grade == None or res_school_class == None:
+        res = {
+            'version': '2.0',
+            'template': {
+                'outputs': [
+                    {
+                        'basicCard': {
+                            'title': '오류',
+                            'description': '현재 학급이 설정되어 있지 않습니다. 아래 버튼을 통해 학급 설정 이후 이용해 주시기 바랍니다.',
+                            'thumbnails': {
+                                'imageUrl': ''
+                            },
+                            'buttons': [
+                                {
+                                    'label': '학급 설정하기',
+                                    'action': 'block',
+                                    'blockId': '635c946c7d0dc94f4d60f044'
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+        return res
+    res_timetable = school[res_school_grade][res_school_class]
     res_timetable_class = [[], [], [], [], []]
     for i in range(8):
         for j in range(5):
@@ -99,35 +249,35 @@ async def api_timetable(request:Request):
                         'type': 'basicCard',
                         'items': [
                             {
-                                'title': f'{req_school_grade}학년 {req_school_class}반 월요일 시간표',
+                                'title': f'{res_school_grade}학년 {res_school_class}반 월요일',
                                 'description': f'{res_timetable_class[0][0]}\n{res_timetable_class[0][1]}\n{res_timetable_class[0][2]}\n{res_timetable_class[0][3]}\n{res_timetable_class[0][4]}\n{res_timetable_class[0][5]}\n{res_timetable_class[0][6]}\n{res_timetable_class[0][7]}'.strip('\nNone'),
                                 'thumbnail': {
                                     'imageUrl': '',
                                 }
                             },
                             {
-                                'title': f'{req_school_grade}학년 {req_school_class}반 화요일 시간표',
+                                'title': f'{res_school_grade}학년 {res_school_class}반 화요일',
                                 'description': f'{res_timetable_class[1][0]}\n{res_timetable_class[1][1]}\n{res_timetable_class[1][2]}\n{res_timetable_class[1][3]}\n{res_timetable_class[1][4]}\n{res_timetable_class[1][5]}\n{res_timetable_class[1][6]}\n{res_timetable_class[1][7]}'.strip('\nNone'),
                                 'thumbnail': {
                                     'imageUrl': '',
                                 }
                             },
                             {
-                                'title': f'{req_school_grade}학년 {req_school_class}반 수요일 시간표',
+                                'title': f'{res_school_grade}학년 {res_school_class}반 수요일',
                                 'description': f'{res_timetable_class[2][0]}\n{res_timetable_class[2][1]}\n{res_timetable_class[2][2]}\n{res_timetable_class[2][3]}\n{res_timetable_class[2][4]}\n{res_timetable_class[2][5]}\n{res_timetable_class[2][6]}\n{res_timetable_class[2][7]}'.strip('\nNone'),
                                 'thumbnail': {
                                     'imageUrl': '',
                                 }
                             },
                             {
-                                'title': f'{req_school_grade}학년 {req_school_class}반 목요일 시간표',
+                                'title': f'{res_school_grade}학년 {res_school_class}반 목요일',
                                 'description': f'{res_timetable_class[3][0]}\n{res_timetable_class[3][1]}\n{res_timetable_class[3][2]}\n{res_timetable_class[3][3]}\n{res_timetable_class[3][4]}\n{res_timetable_class[3][5]}\n{res_timetable_class[3][6]}\n{res_timetable_class[3][7]}'.strip('\nNone'),
                                 'thumbnail': {
                                     'imageUrl': '',
                                 }
                             },
                             {
-                                'title': f'{req_school_grade}학년 {req_school_class}반 금요일 시간표',
+                                'title': f'{res_school_grade}학년 {res_school_class}반 금요일',
                                 'description': f'{res_timetable_class[4][0]}\n{res_timetable_class[4][1]}\n{res_timetable_class[4][2]}\n{res_timetable_class[4][3]}\n{res_timetable_class[4][4]}\n{res_timetable_class[4][5]}\n{res_timetable_class[4][6]}\n{res_timetable_class[4][7]}'.strip('\nNone'),
                                 'thumbnail': {
                                     'imageUrl': '',
@@ -152,12 +302,8 @@ async def api_weather():
             'outputs': [
                 {
                     'itemCard': {
-                        'imageTitle': {
-                            'title': '날씨',
-                            'description': '현재 서울 봉원중학교의 날씨'
-                        },
-                        'thumbnail': {
-                            'imageUrl': ''
+                        'head': {
+                            'title': req['userRequest']['user']['id'],
                         },
                         'itemList': [
                             {
