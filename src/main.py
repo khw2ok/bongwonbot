@@ -303,7 +303,7 @@ async def api_weather():
                 {
                     'itemCard': {
                         'head': {
-                            'title': req['userRequest']['user']['id'],
+                            'title': f'{datetime.now().month}월 {datetime.now().day}일 봉원중학교의 날씨',
                         },
                         'itemList': [
                             {
