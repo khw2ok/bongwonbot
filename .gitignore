@@ -1,9 +1,4 @@
-__pycache__/
-
 .env
-
 .venv/
-
 ngrok
-
 tmp/
