@@ -41,15 +41,9 @@ docs/
     features.md
     version.md
 src/
-    __pycache__/
-    data/
-        html/
-            index.html
-        json/
+    data.json
     main.py
 tmp/
-    backup1.txt
-    backup2.txt
 .env
 .gitignore
 LICENSE
