@@ -1,7 +1,10 @@
 # Bongwon MidSchool ChatBot
 봉원중학교 카카오톡 챗봇
 
-![Python-v3.9.5-blue](https://img.shields.io/badge/Python-v3.9.5-blue) ![license-MIT-green](https://img.shields.io/badge/license-MIT-green)
+![Python-v3.9-blue](https://img.shields.io/badge/Python-v3.9-blue)
+![license-MIT-green](https://img.shields.io/badge/license-MIT-green)
+
+![BongwonBot-i3](http://k.kakaocdn.net/dn/ds0nK1/btrUaWdasAt/D1iD2fvKXYYJNVBm0tjZiK/img_xl.jpg)
 
 ## Run Application
 ```bash
@@ -15,24 +18,17 @@ NEIS_APIKEY
 ```
 
 ### Server Environments
-- Name      : PythonAnywhere
-- OS        : Ubuntu 20.04.2 LTS
-- RAM       : -
-- Python    : 3.9.5
+- Server    : PythonAnywhere
+- Python    : 3.9
 
 ### Develop Environments
 - OS        : Debian bookworm/sid
 - IDE       : VSCode
-- Python    : 3.10.8
-
-## Version
-[업데이트](docs/version.md)
+- Python    : 3.10.9
 
 ## Directory
 ```bash
 .venv/
-docs/
-    version.md
 src/
     data.json
     main.py
