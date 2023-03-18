@@ -1,45 +1,11 @@
-# Bongwon MidSchool ChatBot
+# BongwonBot
 봉원중학교 카카오톡 챗봇
 
-![Python-v3.9-blue](https://img.shields.io/badge/Python-v3.9-blue)
-![license-MIT-green](https://img.shields.io/badge/license-MIT-green)
+[챗봇 바로가기](https://pf.kakao.com/_TBYmb)
 
-![BongwonBot-i3](http://k.kakaocdn.net/dn/ds0nK1/btrUaWdasAt/D1iD2fvKXYYJNVBm0tjZiK/img_xl.jpg)
-
-## Run Application
-```bash
-./start.sh
-```
-
-## Environments
-```
-WEATHER_APIKEY
-NEIS_APIKEY
-```
-
-### Server Environments
-- Server    : PythonAnywhere
-- Python    : 3.9
-
-### Develop Environments
-- OS        : Debian bookworm/sid
-- IDE       : VSCode
-- Python    : 3.10.9
-
-## Directory
-```bash
-.venv/
-src/
-    data.json
-    main.py
-tmp/
-.env
-.gitignore
-LICENSE
-readme.md
-requirements.txt
-start.sh
-```
-
-## Devlopers
-- @khw2ok
+**230317~230318**
+- add: Add docs md.
+- add: Add `api_fallback()`, `api_help()`.
+- update: Update all api.
+- update: Change python package; `comcigan==1.4.3` to `git+https://github.com/khw2ok/comcigan-py`.
+- fix: Now reavailable checking school-timetable.
