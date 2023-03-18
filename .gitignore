@@ -1,4 +1,7 @@
 .env
 .venv/
+.vscode/
 ngrok
+old.py
+test.py
 tmp/
