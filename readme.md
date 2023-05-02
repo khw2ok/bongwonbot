@@ -3,6 +3,9 @@
 
 [챗봇 바로가기](https://pf.kakao.com/_TBYmb)
 
+**230503**
+- update: Some changes.
+
 **230317~230318**
 - add: Add docs md.
 - add: Add `api_fallback()`, `api_help()`.
