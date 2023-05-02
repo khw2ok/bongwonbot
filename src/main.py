@@ -4,7 +4,7 @@ school = School("봉원중학교")
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, session
 app = Flask(__name__)
-# app.config["SERVER_NAME"] = "b1bot.kro.kr"
+app.config["SERVER_NAME"] = "b1bot.kro.kr"
 
 import dotenv
 dotenv.load_dotenv()
@@ -100,8 +100,8 @@ def api_fallback():
     req = request.get_json()
     res_text = ["이해하지 못 했어요. 🤨", "이해하지 못 했어요. 😥", "모르는 내용이에요. 🤨", "모르는 내용이에요. 😥", "아직 답변해드릴 수 없는 내용이에요. 😥"]
     check_req = [
-        ["급식", "긊", "그시", "끄ㅃ씪", "끕식", "급싴", "급시", "rmqtlr"],
-        ["시간표", "시반", "간표", "표", "시간", "시깐표", "tlrksvy", "tlrks"],
+        ["급식", "긊", "그시", "끄ㅃ씪", "끕식", "급싴", "급시", "rmqtlr", "음식", "식사"],
+        ["시간표", "시반", "간표", "표", "시간", "시깐표", "tlrksvy", "tlrks", "학년", "반"],
         ["도움말", "도움", "도와", "움말", "또움", "동움", "ehdnaakf", "ehdna"]
     ]
     if req["userRequest"]["utterance"] in check_req[0]:
