@@ -2,9 +2,8 @@ from comcigan import School
 school = School("봉원중학교")
 
 from datetime import datetime, timedelta
-from flask import Flask, jsonify, request, session
-app = Flask(__name__)
-app.config["SERVER_NAME"] = "b1bot.kro.kr"
+from flask import Blueprint, jsonify, request, session
+app = Blueprint("bongwonbot", __name__)
 
 import dotenv
 dotenv.load_dotenv()
@@ -29,6 +28,8 @@ def checkDB(req):
         data[req["userRequest"]["user"]["id"]]["name"] = "미설정"
         json.dump(data, open("src/data.json", "w"), indent=4)
 
+# TODO : make timeout exception handler
+@app.errorhandler(requests.exceptions.ConnectTimeout)
 @app.errorhandler(Exception)
 def error(e):
     res = {
@@ -332,7 +333,7 @@ def api_meal():
     params_sys_plugin_date = json.loads(req["action"]["params"]["sys_plugin_date"])["value"]
     res_days = ["월", "화", "수", "목", "금", "토", "일"]
     req_plugin_date = datetime.strptime(params_sys_plugin_date, "%Y-%m-%d")
-    data = json.loads(requests.get(f"https://open.neis.go.kr/hub/mealServiceDietInfo?KEY={os.environ['NEIS_APIKEY']}&Type=json&ATPT_OFCDC_SC_CODE=B10&SD_SCHUL_CODE=7132140&MLSV_YMD={req_plugin_date.strftime('%Y%m%d')}").text)
+    data = json.loads(requests.get(f"https://open.neis.go.kr/hub/mealServiceDietInfo?KEY={os.environ['NEIS_APIKEY']}&Type=json&ATPT_OFCDC_SC_CODE=B10&SD_SCHUL_CODE=7132140&MLSV_YMD={req_plugin_date.strftime('%Y%m%d')}", timeout=2).text)
     try:
         data_set = (data["mealServiceDietInfo"][1]["row"][0]["DDISH_NM"]).replace("<br/>", "\n")
         data_reg = re.sub("[#]|[a-zA-Z0-9_]|[ ]|[.]", "", data_set).replace("()", "") 
@@ -486,6 +487,3 @@ def api_timetable():
             }
             return jsonify(res)
         return jsonify(normalRes(res_school_grade, res_school_class))
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)

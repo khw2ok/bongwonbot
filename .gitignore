@@ -1,7 +1,11 @@
 .env
 .venv/
 .vscode/
+__pycache__/
+
+comcigan/
+tmp/
+
 ngrok
 old.py
 test.py
-tmp/
