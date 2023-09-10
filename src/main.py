@@ -3,7 +3,7 @@ school = School("봉원중학교")
 
 from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request, session
-app = Blueprint("bongwonbot", __name__, "/b1bot")
+app = Blueprint("bongwonbot", __name__, url_prefix="/b1bot")
 
 import dotenv
 dotenv.load_dotenv()
