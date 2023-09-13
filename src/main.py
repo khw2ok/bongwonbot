@@ -48,7 +48,7 @@ def error(e):
             ]
         }
     }
-    return jsonify(res)
+    return res
 
 @app.post("/api/welcome")
 def api_welcome():
@@ -94,7 +94,7 @@ def api_welcome():
             ]
         }
     }
-    return jsonify(res)
+    return res
 
 @app.post("/api/fallback")
 def api_fallback():
@@ -142,7 +142,7 @@ def api_fallback():
             "action": "block",
             "blockId": "61efe491e3907f6a2b567319"
         }
-    return jsonify(res)
+    return res
 
 @app.post("/api/help")
 def api_help():
@@ -243,7 +243,7 @@ def api_help():
             ]
         }
     }
-    return jsonify(res)
+    return res
 
 @app.post("/api/config")
 def api_config():
@@ -283,7 +283,7 @@ def api_config():
                 ]
             }
         }
-    return jsonify(res)
+    return res
 
 @app.post("/api/info")
 def api_info():
@@ -325,7 +325,7 @@ def api_info():
             ]
         }
     }
-    return jsonify(res)
+    return res
 
 @app.post("/api/meal")
 def api_meal():
@@ -356,7 +356,7 @@ def api_meal():
             ]
         }
     }
-    return jsonify(res)
+    return res
 
 @app.post("/api/timetable")
 def api_timetable():
@@ -457,7 +457,7 @@ def api_timetable():
     if "bot_school_grade" in req["action"]["params"] and "bot_school_class" in req["action"]["params"]:
         res_school_grade = int(req["action"]["params"]["bot_school_grade"][0])
         res_school_class = int(req["action"]["params"]["bot_school_class"][0])
-        return jsonify(normalRes(res_school_grade, res_school_class))
+        return normalRes(res_school_grade, res_school_class)
     else:
         res_school_grade = data[req["userRequest"]["user"]["id"]]["grade"]
         res_school_class = data[req["userRequest"]["user"]["id"]]["class"]
@@ -485,5 +485,5 @@ def api_timetable():
                     ]
                 }
             }
-            return jsonify(res)
-        return jsonify(normalRes(res_school_grade, res_school_class))
+            return res
+        return normalRes(res_school_grade, res_school_class)
